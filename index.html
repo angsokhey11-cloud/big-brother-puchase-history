@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BIG BROTHER — Purchase History V1.4 Instant Preview</title>
+<title>BIG BROTHER — Purchase History V1.5 Smart Sync</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f4f7fb;color:#1f2937;font-family:Inter,Arial,sans-serif}
@@ -171,11 +171,16 @@ th{background:#f8fafc;color:#475569;position:sticky;top:0}
 
 <script>
 const PURCHASE_DATABASE_API_URL = "https://script.google.com/macros/s/AKfycbz7k1iBBfx9xiIKl1719W_jsKA8kLl7ihD4UykIyIAk-btXvAiOsORiw71NWwUD6XFOgg/exec";
-const MASTER_DATABASE_API_URL = "https://script.google.com/macros/s/AKfycbzIjs-cNehMxWTZs3ZPAosseGUu1nqACTPo3S4-onLLEYnEgqP6AUK7p3jwb6MaFr7H0w/exec";
 
 let purchases=[];
 let allPurchaseItems=[];
-let masterProducts=[];
+
+const PURCHASE_HISTORY_CACHE_KEY="BB_PURCHASE_HISTORY_DEVICE_CACHE_V1";
+const PURCHASE_SYNC_INTERVAL_MS=20000;
+
+let purchaseLastRevision="";
+let purchaseSyncBusy=false;
+let purchaseSyncTimer=null;
 
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
@@ -210,24 +215,214 @@ function getJson(url, params = {}) {
   });
 }
 
-async function loadPurchases(){
-  setStatus("Loading Purchase History...");
+function readPurchaseDeviceCache(){
   try{
-    const res=await getJson(PURCHASE_DATABASE_API_URL,{action:"getPurchaseHistoryBundle"});
-    if(res?.success===false) throw new Error(res.error||"Database error.");
+    const raw=localStorage.getItem(PURCHASE_HISTORY_CACHE_KEY);
+    if(!raw) return null;
+
+    const parsed=JSON.parse(raw);
+    if(!parsed || !Array.isArray(parsed.purchases) || !Array.isArray(parsed.items)){
+      return null;
+    }
+
+    return parsed;
+  }catch(_){
+    return null;
+  }
+}
+
+function savePurchaseDeviceCache(revision){
+  try{
+    const payload={
+      revision:String(revision||purchaseLastRevision||""),
+      savedAt:Date.now(),
+      purchases:Array.isArray(purchases)?purchases:[],
+      items:Array.isArray(allPurchaseItems)?allPurchaseItems:[]
+    };
+
+    localStorage.setItem(PURCHASE_HISTORY_CACHE_KEY,JSON.stringify(payload));
+    if(payload.revision) purchaseLastRevision=payload.revision;
+
+  }catch(error){
+    console.warn("Purchase History device cache unavailable:",error);
+  }
+}
+
+function renderPurchaseDeviceCache(){
+  const cached=readPurchaseDeviceCache();
+  if(!cached) return false;
+
+  purchaseLastRevision=String(cached.revision||"");
+  purchases=cached.purchases;
+  allPurchaseItems=cached.items;
+  render();
+  setStatus("Cached • checking for updates...","success");
+  return true;
+}
+
+async function fetchPurchaseRevision(){
+  const data=await getJson(PURCHASE_DATABASE_API_URL,{
+    action:"purchaseHistoryRevision"
+  });
+
+  if(data?.success===false){
+    throw new Error(data.error||"Sync check failed.");
+  }
+
+  return String(data?.revision||"0");
+}
+
+function flashPurchaseSyncStatus(text){
+  setStatus(text,"success");
+
+  clearTimeout(flashPurchaseSyncStatus.timer);
+  flashPurchaseSyncStatus.timer=setTimeout(()=>{
+    setStatus(purchases.length+" Purchase record(s) loaded.","success");
+  },1800);
+}
+
+async function purchaseSmartSyncTick(forceCheck=false){
+  if(purchaseSyncBusy) return;
+  if(document.hidden && !forceCheck) return;
+
+  purchaseSyncBusy=true;
+
+  try{
+    const revision=await fetchPurchaseRevision();
+
+    if(purchaseLastRevision && revision===purchaseLastRevision){
+      flashPurchaseSyncStatus("Up to date • auto sync 20s");
+      return;
+    }
+
+    purchaseLastRevision=revision;
+    await loadPurchases({silent:true});
+    flashPurchaseSyncStatus("Updated automatically");
+
+  }catch(error){
+    console.warn("Purchase History smart sync check failed:",error);
+    // Keep cached/current data visible and retry on next cycle.
+  }finally{
+    purchaseSyncBusy=false;
+  }
+}
+
+function startPurchaseSmartSync(){
+  if(purchaseSyncTimer) clearInterval(purchaseSyncTimer);
+
+  purchaseSyncTimer=setInterval(
+    ()=>purchaseSmartSyncTick(false),
+    PURCHASE_SYNC_INTERVAL_MS
+  );
+}
+
+async function loadPurchases(options={}){
+  const silent=options && options.silent===true;
+
+  if(!silent){
+    setStatus("Loading Purchase History...");
+  }
+
+  try{
+    const res=await getJson(PURCHASE_DATABASE_API_URL,{
+      action:"getPurchaseHistoryBundle"
+    });
+
+    if(res?.success===false){
+      throw new Error(res.error||"Database error.");
+    }
 
     purchases=Array.isArray(res?.purchases)?res.purchases:[];
     allPurchaseItems=Array.isArray(res?.items)?res.items:[];
+    purchaseLastRevision=String(res?.revision||purchaseLastRevision||"");
 
     render();
-    setStatus(purchases.length+" Purchase record(s) loaded.","success");
+    savePurchaseDeviceCache(purchaseLastRevision);
+
+    if(!silent){
+      setStatus(purchases.length+" Purchase record(s) loaded.","success");
+    }
+
   }catch(e){
     console.error(e);
+
+    const cached=readPurchaseDeviceCache();
+
+    if(cached){
+      purchases=cached.purchases;
+      allPurchaseItems=cached.items;
+      purchaseLastRevision=String(cached.revision||purchaseLastRevision||"");
+      render();
+      setStatus("Cached data shown • sync will retry automatically.","success");
+      return;
+    }
+
     purchases=[];
     allPurchaseItems=[];
     render();
     setStatus("Could not load Purchase History: "+(e.message||"Database connection error."));
   }
+}
+
+
+function formatDateOnly(value){
+  if(!value) return "";
+  if(value instanceof Date && !isNaN(value)) {
+    return String(value.getDate()).padStart(2,"0")+"/"+
+      String(value.getMonth()+1).padStart(2,"0")+"/"+
+      value.getFullYear();
+  }
+
+  const s=String(value).trim();
+
+  const iso=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(iso) return iso[3]+"/"+iso[2]+"/"+iso[1];
+
+  const js=new Date(s);
+  if(!isNaN(js)) {
+    return String(js.getDate()).padStart(2,"0")+"/"+
+      String(js.getMonth()+1).padStart(2,"0")+"/"+
+      js.getFullYear();
+  }
+
+  return s.replace(/\s+\d{2}:\d{2}:\d{2}.*$/,"");
+}
+
+function amountToWordsEnglish(n){
+  n=Math.round(Number(n)||0);
+  if(n===0) return "Zero";
+  const ones=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+  const tens=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+  function under1000(x){
+    let out=[];
+    if(x>=100){out.push(ones[Math.floor(x/100)]+" Hundred");x%=100;}
+    if(x>=20){out.push(tens[Math.floor(x/10)]);if(x%10)out.push(ones[x%10]);}
+    else if(x>0)out.push(ones[x]);
+    return out.join(" ");
+  }
+  const parts=[];
+  const billion=Math.floor(n/1e9); if(billion){parts.push(under1000(billion)+" Billion");n%=1e9;}
+  const million=Math.floor(n/1e6); if(million){parts.push(under1000(million)+" Million");n%=1e6;}
+  const thousand=Math.floor(n/1000); if(thousand){parts.push(under1000(thousand)+" Thousand");n%=1000;}
+  if(n) parts.push(under1000(n));
+  return parts.join(" ");
+}
+
+function amountInWords(value,currency){
+  const n=Number(value)||0;
+  const whole=Math.floor(n);
+  const cents=Math.round((n-whole)*100);
+  if(String(currency).toUpperCase()==="KHR"){
+    return amountToWordsEnglish(Math.round(n))+" Cambodian Riels Only";
+  }
+  let out=amountToWordsEnglish(whole)+" US Dollars";
+  if(cents) out+=" and "+amountToWordsEnglish(cents)+" Cents";
+  return out+" Only";
+}
+
+
+function getProductBarcode(item){
+  return String(item?.productBarcode || "").trim();
 }
 
 function filtered(){
@@ -287,105 +482,108 @@ function render(){
 }
 
 function previewPurchase(id){
-  const p=purchases.find(x=>String(x.purchaseId||"").toLowerCase()===String(id||"").toLowerCase());
-  const items=allPurchaseItems
-    .filter(x=>String(x.purchaseId||"").toLowerCase()===String(id||"").toLowerCase())
-    .sort((a,b)=>num(a.lineNo)-num(b.lineNo));
+  const wanted=String(id||"").toLowerCase();
+  const p=purchases.find(x=>String(x.purchaseId||"").toLowerCase()===wanted);
 
   if(!p){
     alert("Purchase Detail was not found.");
     return;
   }
 
+  const items=allPurchaseItems
+    .filter(x=>String(x.purchaseId||"").toLowerCase()===wanted)
+    .sort((a,b)=>num(a.lineNo)-num(b.lineNo));
+
   document.getElementById("modal").classList.add("show");
   document.getElementById("modalSub").textContent=id;
+
   const cur=String(p.currency||"USD").toUpperCase();
 
   document.getElementById("detailContent").innerHTML=`
-    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-      <button class="print-btn" onclick="window.print()">Print</button>
-    </div>
-
-    <div class="invoice-sheet">
-      <div class="invoice-brand">
-        <div class="name">BIG BROTHER</div>
-        <div class="tag">Ready to be your partner</div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+        <button class="print-btn" onclick="window.print()">Print</button>
       </div>
 
-      <div class="invoice-rule"></div>
-      <div class="invoice-title">PURCHASE INVOICE</div>
-
-      <div class="invoice-meta">
-        <div>
-          <div style="font-weight:900;color:#174a91;margin-bottom:8px">Supplier / Client</div>
-          <div class="invoice-line"><div class="k">Name</div><div>${esc(p.clientName||"-")}</div></div>
-          <div class="invoice-line"><div class="k">Client Invoice No.</div><div>${esc(p.clientInvoiceNumber||"-")}</div></div>
-          <div class="invoice-line"><div class="k">Currency</div><div>${esc(cur)}</div></div>
+      <div class="invoice-sheet">
+        <div class="invoice-brand">
+          <div class="name">BIG BROTHER</div>
+          <div class="tag">Ready to be your partner</div>
         </div>
 
-        <div class="invoice-box">
-          <div class="invoice-line"><div class="k">Purchase ID</div><div>${esc(p.purchaseId||"-")}</div></div>
-          <div class="invoice-line"><div class="k">Purchase Date</div><div>${esc(formatDateOnly(p.purchaseDate))}</div></div>
-          <div class="invoice-line"><div class="k">Payment Term</div><div>${esc(p.paymentTerm||"-")}</div></div>
-          <div class="invoice-line"><div class="k">Purchaser</div><div>${esc(p.purchaserName||"-")}</div></div>
-        </div>
-      </div>
+        <div class="invoice-rule"></div>
+        <div class="invoice-title">PURCHASE INVOICE</div>
 
-      <table class="invoice-table">
-        <thead>
-          <tr>
-            <th style="width:60px">N.O.</th>
-            <th>Description</th>
-            <th style="width:130px">Qty / Unit</th>
-            <th style="width:150px">Unit Price (${esc(cur)})</th>
-            <th style="width:150px">Amount (${esc(cur)})</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items.length?items.map((x,i)=>`
+        <div class="invoice-meta">
+          <div>
+            <div style="font-weight:900;color:#174a91;margin-bottom:8px">Supplier / Client</div>
+            <div class="invoice-line"><div class="k">Name</div><div>${esc(p.clientName||"-")}</div></div>
+            <div class="invoice-line"><div class="k">Client Invoice No.</div><div>${esc(p.clientInvoiceNumber||"-")}</div></div>
+            <div class="invoice-line"><div class="k">Currency</div><div>${esc(cur)}</div></div>
+          </div>
+
+          <div class="invoice-box">
+            <div class="invoice-line"><div class="k">Purchase ID</div><div>${esc(p.purchaseId||"-")}</div></div>
+            <div class="invoice-line"><div class="k">Purchase Date</div><div>${esc(formatDateOnly(p.purchaseDate))}</div></div>
+            <div class="invoice-line"><div class="k">Payment Term</div><div>${esc(p.paymentTerm||"-")}</div></div>
+            <div class="invoice-line"><div class="k">Purchaser</div><div>${esc(p.purchaserName||"-")}</div></div>
+          </div>
+        </div>
+
+        <table class="invoice-table">
+          <thead>
             <tr>
-              <td style="text-align:center">${i+1}</td>
-              <td>
-                <strong>${esc(x.productName)}</strong>
-                <div style="font-size:10px;color:#6b7280">${esc(getProductBarcode(x.productCode)||"")}</div>
-              </td>
-              <td style="text-align:center">${num(x.qty)} ${esc(x.unit||"")}</td>
-              <td style="text-align:right">${money(x.unitPrice,cur)}</td>
-              <td style="text-align:right"><strong>${money(x.amount,cur)}</strong></td>
-            </tr>`).join(""):'<tr><td colspan="5">No Purchase Items found.</td></tr>'}
-        </tbody>
-      </table>
+              <th style="width:60px">N.O.</th>
+              <th>Description</th>
+              <th style="width:130px">Qty / Unit</th>
+              <th style="width:150px">Unit Price (${esc(cur)})</th>
+              <th style="width:150px">Amount (${esc(cur)})</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.length?items.map((x,i)=>`
+              <tr>
+                <td style="text-align:center">${i+1}</td>
+                <td>
+                  <strong>${esc(x.productName)}</strong>
+                  <div style="font-size:10px;color:#6b7280">${esc(getProductBarcode(x))}</div>
+                </td>
+                <td style="text-align:center">${num(x.qty)} ${esc(x.unit||"")}</td>
+                <td style="text-align:right">${money(x.unitPrice,cur)}</td>
+                <td style="text-align:right"><strong>${money(x.amount,cur)}</strong></td>
+              </tr>`).join(""):'<tr><td colspan="5">No Purchase Items found.</td></tr>'}
+          </tbody>
+        </table>
 
-      <div class="invoice-summary">
-        <div class="row"><span>Subtotal</span><strong>${money(p.subtotal,cur)}</strong></div>
-        <div class="row"><span>Discount</span><strong>${money(p.discount,cur)}</strong></div>
-        <div class="row total"><span>Grand Total (${esc(cur)})</span><span>${money(p.grandTotal,cur)}</span></div>
-      </div>
+        <div class="invoice-summary">
+          <div class="row"><span>Subtotal</span><strong>${money(p.subtotal,cur)}</strong></div>
+          <div class="row"><span>Discount</span><strong>${money(p.discount,cur)}</strong></div>
+          <div class="row total"><span>Grand Total (${esc(cur)})</span><span>${money(p.grandTotal,cur)}</span></div>
+        </div>
 
-      <div class="invoice-note">
-        <div style="font-size:11px;font-weight:900;color:#475569;margin-bottom:6px">Amount In Words</div>
-        <div>${esc(amountInWords(p.grandTotal,cur))}</div>
-      </div>
-
-      ${p.note?`
         <div class="invoice-note">
-          <div style="font-size:11px;font-weight:900;color:#475569;margin-bottom:6px">Note</div>
-          <div>${esc(p.note)}</div>
-        </div>`:""}
-
-      <div class="invoice-sign">
-        <div class="sig">
-          <div>Prepared By</div>
-          <div class="line"></div>
-          <strong>${esc(p.purchaserName||"")}</strong>
+          <div style="font-size:11px;font-weight:900;color:#475569;margin-bottom:6px">Amount In Words</div>
+          <div>${esc(amountInWords(p.grandTotal,cur))}</div>
         </div>
-        <div class="sig">
-          <div>Authorized By</div>
-          <div class="line"></div>
-          <strong>&nbsp;</strong>
+
+        ${p.note?`
+          <div class="invoice-note">
+            <div style="font-size:11px;font-weight:900;color:#475569;margin-bottom:6px">Note</div>
+            <div>${esc(p.note)}</div>
+          </div>`:""}
+
+        <div class="invoice-sign">
+          <div class="sig">
+            <div>Prepared By</div>
+            <div class="line"></div>
+            <strong>${esc(p.purchaserName||"")}</strong>
+          </div>
+          <div class="sig">
+            <div>Authorized By</div>
+            <div class="line"></div>
+            <strong>&nbsp;</strong>
+          </div>
         </div>
       </div>
-    </div>
   `;
 }
 
@@ -399,7 +597,23 @@ function clearFilters(){
 }
 
 document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
-Promise.all([loadMasterProducts(),loadPurchases()]);
+(async function initializePurchaseHistory(){
+  const showedCache=renderPurchaseDeviceCache();
+
+  if(!showedCache){
+    await loadPurchases();
+  }else{
+    await purchaseSmartSyncTick(true);
+  }
+
+  startPurchaseSmartSync();
+})();
+
+document.addEventListener("visibilitychange",function(){
+  if(!document.hidden){
+    purchaseSmartSyncTick(true);
+  }
+});
 </script>
 </body>
 </html>
