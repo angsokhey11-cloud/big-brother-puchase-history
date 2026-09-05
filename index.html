@@ -1,1 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BIG BROTHER — Purchase History V1</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7fb;color:#1f2937;font-family:Inter,Arial,sans-serif}
+:root{--blue:#174a91;--line:#dce4ee;--muted:#6b7280;--green:#157a51;--red:#b42318}
+.page{max-width:1550px;margin:auto;padding:22px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
+h1{margin:0;color:var(--blue);font-size:28px}
+.sub{font-size:13px;color:var(--muted);margin-top:5px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 14px #173a6610;padding:17px;margin-bottom:15px}
+.filters{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr auto;gap:10px;align-items:end}
+label{display:block;font-size:12px;font-weight:800;color:#475569;margin-bottom:6px}
+input,select{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:10px 11px;font:inherit;background:#fff}
+button{cursor:pointer;font-weight:800;border-radius:8px;padding:10px 14px}
+.primary{border:0;background:var(--blue);color:#fff}
+.secondary{border:1px solid var(--line);background:#fff;color:#334155}
+.status{background:#eef4fb;border:1px solid #d9e5f3;color:#405d7d;padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:12px}
+.status.success{background:#eef9f3;border-color:#c9ead9;color:#176c4a}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:1250px}
+th,td{padding:10px;border-bottom:1px solid var(--line);font-size:12px;text-align:left;white-space:nowrap}
+th{background:#f8fafc;color:#475569;position:sticky;top:0}
+.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800}
+.badge.paid{background:#e9f8f0;color:#176c4a}
+.badge.partial{background:#fff7e6;color:#8a5a00}
+.badge.unpaid{background:#fff0f0;color:#a62f2f}
+.badge.done{background:#eef4fb;color:#174a91}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:15px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat .k{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}
+.stat .v{font-size:20px;font-weight:900;color:#22354d;margin-top:4px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal.show{display:flex}
+.modalbox{background:#fff;border-radius:14px;max-width:1100px;width:100%;max-height:90vh;overflow:auto;padding:18px}
+.modalhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.close{border:1px solid var(--line);background:#fff}
+.detailgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.detail{border:1px solid var(--line);border-radius:9px;padding:10px}
+.detail .k{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase}
+.detail .v{margin-top:4px;font-weight:800}
+@media(max-width:1000px){.filters,.summary,.detailgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.filters,.summary,.detailgrid{grid-template-columns:1fr}.page{padding:12px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="top">
+    <div>
+      <h1>Purchase History</h1>
+      <div class="sub">BIG BROTHER — Purchase Records</div>
+    </div>
+    <button class="secondary" onclick="loadPurchases()">Refresh</button>
+  </div>
 
+  <div class="summary">
+    <div class="stat"><div class="k">Purchase Count</div><div class="v" id="countStat">0</div></div>
+    <div class="stat"><div class="k">Total Purchase USD</div><div class="v" id="usdStat">$0.00</div></div>
+    <div class="stat"><div class="k">Total Payable USD</div><div class="v" id="payableStat">$0.00</div></div>
+    <div class="stat"><div class="k">Clients</div><div class="v" id="clientStat">0</div></div>
+  </div>
+
+  <div class="card">
+    <div id="status" class="status">Loading Purchase History...</div>
+
+    <div class="filters">
+      <div>
+        <label>Search</label>
+        <input id="search" placeholder="Purchase ID / Client / Purchaser" oninput="render()">
+      </div>
+      <div>
+        <label>From Date</label>
+        <input id="fromDate" type="date" onchange="render()">
+      </div>
+      <div>
+        <label>To Date</label>
+        <input id="toDate" type="date" onchange="render()">
+      </div>
+      <div>
+        <label>Payment Status</label>
+        <select id="paymentStatus" onchange="render()">
+          <option value="">All</option>
+          <option>Paid</option>
+          <option>Partially Paid</option>
+          <option>Unpaid</option>
+        </select>
+      </div>
+      <button class="secondary" onclick="clearFilters()">Clear</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Purchase ID</th>
+            <th>Purchase Date</th>
+            <th>Client</th>
+            <th>Purchaser</th>
+            <th>Currency</th>
+            <th>Grand Total</th>
+            <th>Amount Paid</th>
+            <th>Payable</th>
+            <th>Payment Status</th>
+            <th>Status</th>
+            <th>Preview</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="11">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modalbox">
+    <div class="modalhead">
+      <div>
+        <h2 style="margin:0;color:#174a91">Purchase Detail</h2>
+        <div class="sub" id="modalSub"></div>
+      </div>
+      <button class="close" onclick="closeModal()">Close</button>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<script>
+const PURCHASE_DATABASE_API_URL = "https://script.google.com/macros/s/AKfycbz7k1iBBfx9xiIKl1719W_jsKA8kLl7ihD4UykIyIAk-btXvAiOsORiw71NWwUD6XFOgg/exec";
+
+let purchases=[];
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+function money(v,currency="USD"){
+  const n=num(v);
+  if(currency==="KHR") return n.toLocaleString("en-US",{maximumFractionDigits:0})+" ៛";
+  return "$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function setStatus(msg,type=""){const el=document.getElementById("status");el.textContent=msg;el.className="status"+(type?" "+type:"");}
+function arrayOf(res){if(Array.isArray(res))return res;if(Array.isArray(res?.data))return res.data;return [];}
+
+function getJson(url, params = {}) {
+  return new Promise((resolve, reject) => {
+    const cb="bbph_"+Date.now()+"_"+Math.floor(Math.random()*1000000);
+    const script=document.createElement("script");
+    let done=false;
+    const cleanup=()=>{if(done)return;done=true;clearTimeout(timer);try{delete window[cb]}catch(_){window[cb]=undefined}script.remove();};
+
+    window[cb]=(data)=>{cleanup();resolve(data);};
+
+    const u=new URL(url);
+    Object.entries(params).forEach(([k,v])=>{if(v!==undefined&&v!==null)u.searchParams.set(k,v);});
+    u.searchParams.set("callback",cb);
+    u.searchParams.set("_t",Date.now());
+
+    script.src=u.toString();
+    script.async=true;
+    script.onerror=()=>{cleanup();reject(new Error("Could not load Purchase Database."));};
+
+    const timer=setTimeout(()=>{cleanup();reject(new Error("Purchase Database request timed out."));},15000);
+    document.head.appendChild(script);
+  });
+}
+
+async function loadPurchases(){
+  setStatus("Loading Purchase History...");
+  try{
+    const res=await getJson(PURCHASE_DATABASE_API_URL,{action:"getPurchases"});
+    if(res?.success===false) throw new Error(res.error||"Database error.");
+    purchases=arrayOf(res);
+    render();
+    setStatus(purchases.length+" Purchase record(s) loaded.","success");
+  }catch(e){
+    console.error(e);
+    purchases=[];
+    render();
+    setStatus("Could not load Purchase History: "+(e.message||"Database connection error."));
+  }
+}
+
+function filtered(){
+  const q=document.getElementById("search").value.trim().toLowerCase();
+  const from=document.getElementById("fromDate").value;
+  const to=document.getElementById("toDate").value;
+  const ps=document.getElementById("paymentStatus").value;
+
+  return purchases.filter(p=>{
+    const hay=[p.purchaseId,p.clientName,p.clientCode,p.purchaserName].join(" ").toLowerCase();
+    if(q && !hay.includes(q)) return false;
+    if(from && String(p.purchaseDate||"")<from) return false;
+    if(to && String(p.purchaseDate||"")>to) return false;
+    if(ps && String(p.paymentStatus||"")!==ps) return false;
+    return true;
+  }).sort((a,b)=>String(b.purchaseDate||"").localeCompare(String(a.purchaseDate||"")) || String(b.purchaseId||"").localeCompare(String(a.purchaseId||"")));
+}
+
+function badge(status){
+  const s=String(status||"").toLowerCase();
+  let cls="done";
+  if(s==="paid") cls="paid";
+  else if(s.includes("partial")) cls="partial";
+  else if(s==="unpaid") cls="unpaid";
+  return `<span class="badge ${cls}">${esc(status||"-")}</span>`;
+}
+
+function render(){
+  const rows=filtered();
+  const body=document.getElementById("tbody");
+
+  if(!rows.length){
+    body.innerHTML='<tr><td colspan="11">No Purchase records found.</td></tr>';
+  }else{
+    body.innerHTML=rows.map(p=>`
+      <tr>
+        <td><strong>${esc(p.purchaseId)}</strong></td>
+        <td>${esc(p.purchaseDate)}</td>
+        <td>${esc(p.clientName)}</td>
+        <td>${esc(p.purchaserName)}</td>
+        <td>${esc(p.currency)}</td>
+        <td><strong>${money(p.grandTotal,p.currency)}</strong></td>
+        <td>${money(p.amountPaid,p.currency)}</td>
+        <td>${money(p.payable,p.currency)}</td>
+        <td>${badge(p.paymentStatus)}</td>
+        <td>${badge(p.status)}</td>
+        <td><button class="primary" onclick="previewPurchase('${esc(p.purchaseId)}')">Preview</button></td>
+      </tr>
+    `).join("");
+  }
+
+  const usd=rows.filter(x=>String(x.currency||"USD")==="USD");
+  document.getElementById("countStat").textContent=rows.length;
+  document.getElementById("usdStat").textContent=money(usd.reduce((s,x)=>s+num(x.grandTotal),0),"USD");
+  document.getElementById("payableStat").textContent=money(usd.reduce((s,x)=>s+num(x.payable),0),"USD");
+  document.getElementById("clientStat").textContent=new Set(rows.map(x=>x.clientId||x.clientName).filter(Boolean)).size;
+}
+
+async function previewPurchase(id){
+  document.getElementById("modal").classList.add("show");
+  document.getElementById("modalSub").textContent=id;
+  document.getElementById("detailContent").innerHTML="Loading...";
+
+  try{
+    const res=await getJson(PURCHASE_DATABASE_API_URL,{action:"getPurchaseDetail",purchaseId:id});
+    if(res?.success===false) throw new Error(res.error||"Could not load Purchase Detail.");
+
+    const p=res.purchase||{};
+    const items=Array.isArray(res.items)?res.items:[];
+
+    document.getElementById("detailContent").innerHTML=`
+      <div class="detailgrid">
+        <div class="detail"><div class="k">Purchase ID</div><div class="v">${esc(p.purchaseId)}</div></div>
+        <div class="detail"><div class="k">Purchase Date</div><div class="v">${esc(p.purchaseDate)}</div></div>
+        <div class="detail"><div class="k">Client</div><div class="v">${esc(p.clientName)}</div></div>
+        <div class="detail"><div class="k">Purchaser</div><div class="v">${esc(p.purchaserName)}</div></div>
+        <div class="detail"><div class="k">Grand Total</div><div class="v">${money(p.grandTotal,p.currency)}</div></div>
+        <div class="detail"><div class="k">Amount Paid</div><div class="v">${money(p.amountPaid,p.currency)}</div></div>
+        <div class="detail"><div class="k">Payable</div><div class="v">${money(p.payable,p.currency)}</div></div>
+        <div class="detail"><div class="k">Payment Status</div><div class="v">${badge(p.paymentStatus)}</div></div>
+      </div>
+
+      <div class="tablewrap">
+        <table style="min-width:850px">
+          <thead><tr><th>No.</th><th>Product</th><th>Product Code</th><th>Qty</th><th>Unit</th><th>Unit Price</th><th>Amount</th></tr></thead>
+          <tbody>
+            ${items.length?items.map((x,i)=>`
+              <tr>
+                <td>${i+1}</td>
+                <td><strong>${esc(x.productName)}</strong></td>
+                <td>${esc(x.productCode)}</td>
+                <td>${num(x.qty)}</td>
+                <td>${esc(x.unit)}</td>
+                <td>${money(x.unitPrice,p.currency)}</td>
+                <td><strong>${money(x.amount,p.currency)}</strong></td>
+              </tr>`).join(""):'<tr><td colspan="7">No Purchase Items found.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+
+      ${p.note?`<div class="detail" style="margin-top:12px"><div class="k">Note</div><div class="v">${esc(p.note)}</div></div>`:""}
+    `;
+  }catch(e){
+    document.getElementById("detailContent").innerHTML='<div class="status">Could not load detail: '+esc(e.message||"Error")+'</div>';
+  }
+}
+
+function closeModal(){document.getElementById("modal").classList.remove("show");}
+function clearFilters(){
+  document.getElementById("search").value="";
+  document.getElementById("fromDate").value="";
+  document.getElementById("toDate").value="";
+  document.getElementById("paymentStatus").value="";
+  render();
+}
+
+document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
+loadPurchases();
+</script>
+</body>
+</html>
