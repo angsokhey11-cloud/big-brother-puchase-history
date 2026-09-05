@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BIG BROTHER — Purchase History V1.2 Barcode Value</title>
+<title>BIG BROTHER — Purchase History V1.4 Instant Preview</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f4f7fb;color:#1f2937;font-family:Inter,Arial,sans-serif}
@@ -174,6 +174,7 @@ const PURCHASE_DATABASE_API_URL = "https://script.google.com/macros/s/AKfycbz7k1
 const MASTER_DATABASE_API_URL = "https://script.google.com/macros/s/AKfycbzIjs-cNehMxWTZs3ZPAosseGUu1nqACTPo3S4-onLLEYnEgqP6AUK7p3jwb6MaFr7H0w/exec";
 
 let purchases=[];
+let allPurchaseItems=[];
 let masterProducts=[];
 
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
@@ -212,90 +213,21 @@ function getJson(url, params = {}) {
 async function loadPurchases(){
   setStatus("Loading Purchase History...");
   try{
-    const res=await getJson(PURCHASE_DATABASE_API_URL,{action:"getPurchases"});
+    const res=await getJson(PURCHASE_DATABASE_API_URL,{action:"getPurchaseHistoryBundle"});
     if(res?.success===false) throw new Error(res.error||"Database error.");
-    purchases=arrayOf(res);
+
+    purchases=Array.isArray(res?.purchases)?res.purchases:[];
+    allPurchaseItems=Array.isArray(res?.items)?res.items:[];
+
     render();
     setStatus(purchases.length+" Purchase record(s) loaded.","success");
   }catch(e){
     console.error(e);
     purchases=[];
+    allPurchaseItems=[];
     render();
     setStatus("Could not load Purchase History: "+(e.message||"Database connection error."));
   }
-}
-
-
-function formatDateOnly(value){
-  if(!value) return "";
-  if(value instanceof Date && !isNaN(value)) {
-    return String(value.getDate()).padStart(2,"0")+"/"+
-      String(value.getMonth()+1).padStart(2,"0")+"/"+
-      value.getFullYear();
-  }
-
-  const s=String(value).trim();
-
-  const iso=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if(iso) return iso[3]+"/"+iso[2]+"/"+iso[1];
-
-  const js=new Date(s);
-  if(!isNaN(js)) {
-    return String(js.getDate()).padStart(2,"0")+"/"+
-      String(js.getMonth()+1).padStart(2,"0")+"/"+
-      js.getFullYear();
-  }
-
-  return s.replace(/\s+\d{2}:\d{2}:\d{2}.*$/,"");
-}
-
-function amountToWordsEnglish(n){
-  n=Math.round(Number(n)||0);
-  if(n===0) return "Zero";
-  const ones=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
-  const tens=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
-  function under1000(x){
-    let out=[];
-    if(x>=100){out.push(ones[Math.floor(x/100)]+" Hundred");x%=100;}
-    if(x>=20){out.push(tens[Math.floor(x/10)]);if(x%10)out.push(ones[x%10]);}
-    else if(x>0)out.push(ones[x]);
-    return out.join(" ");
-  }
-  const parts=[];
-  const billion=Math.floor(n/1e9); if(billion){parts.push(under1000(billion)+" Billion");n%=1e9;}
-  const million=Math.floor(n/1e6); if(million){parts.push(under1000(million)+" Million");n%=1e6;}
-  const thousand=Math.floor(n/1000); if(thousand){parts.push(under1000(thousand)+" Thousand");n%=1000;}
-  if(n) parts.push(under1000(n));
-  return parts.join(" ");
-}
-
-function amountInWords(value,currency){
-  const n=Number(value)||0;
-  const whole=Math.floor(n);
-  const cents=Math.round((n-whole)*100);
-  if(String(currency).toUpperCase()==="KHR"){
-    return amountToWordsEnglish(Math.round(n))+" Cambodian Riels Only";
-  }
-  let out=amountToWordsEnglish(whole)+" US Dollars";
-  if(cents) out+=" and "+amountToWordsEnglish(cents)+" Cents";
-  return out+" Only";
-}
-
-
-async function loadMasterProducts(){
-  try{
-    const res=await getJson(MASTER_DATABASE_API_URL,{action:"getProducts"});
-    masterProducts=arrayOf(res);
-  }catch(e){
-    console.error("Could not load Master Products",e);
-    masterProducts=[];
-  }
-}
-
-function getProductBarcode(productCode){
-  const code=String(productCode||"").trim().toLowerCase();
-  const p=masterProducts.find(x=>String(x.productCode||"").trim().toLowerCase()===code);
-  return p ? String(p.productBarcode||p.barcode||"").trim() : "";
 }
 
 function filtered(){
@@ -354,105 +286,107 @@ function render(){
   document.getElementById("clientStat").textContent=new Set(rows.map(x=>x.clientId||x.clientName).filter(Boolean)).size;
 }
 
-async function previewPurchase(id){
+function previewPurchase(id){
+  const p=purchases.find(x=>String(x.purchaseId||"").toLowerCase()===String(id||"").toLowerCase());
+  const items=allPurchaseItems
+    .filter(x=>String(x.purchaseId||"").toLowerCase()===String(id||"").toLowerCase())
+    .sort((a,b)=>num(a.lineNo)-num(b.lineNo));
+
+  if(!p){
+    alert("Purchase Detail was not found.");
+    return;
+  }
+
   document.getElementById("modal").classList.add("show");
   document.getElementById("modalSub").textContent=id;
-  document.getElementById("detailContent").innerHTML="Loading...";
+  const cur=String(p.currency||"USD").toUpperCase();
 
-  try{
-    const res=await getJson(PURCHASE_DATABASE_API_URL,{action:"getPurchaseDetail",purchaseId:id});
-    if(res?.success===false) throw new Error(res.error||"Could not load Purchase Detail.");
+  document.getElementById("detailContent").innerHTML=`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button class="print-btn" onclick="window.print()">Print</button>
+    </div>
 
-    const p=res.purchase||{};
-    const items=Array.isArray(res.items)?res.items:[];
-    const cur=String(p.currency||"USD").toUpperCase();
-
-    document.getElementById("detailContent").innerHTML=`
-      <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-        <button class="print-btn" onclick="window.print()">Print</button>
+    <div class="invoice-sheet">
+      <div class="invoice-brand">
+        <div class="name">BIG BROTHER</div>
+        <div class="tag">Ready to be your partner</div>
       </div>
 
-      <div class="invoice-sheet">
-        <div class="invoice-brand">
-          <div class="name">BIG BROTHER</div>
-          <div class="tag">Ready to be your partner</div>
+      <div class="invoice-rule"></div>
+      <div class="invoice-title">PURCHASE INVOICE</div>
+
+      <div class="invoice-meta">
+        <div>
+          <div style="font-weight:900;color:#174a91;margin-bottom:8px">Supplier / Client</div>
+          <div class="invoice-line"><div class="k">Name</div><div>${esc(p.clientName||"-")}</div></div>
+          <div class="invoice-line"><div class="k">Client Invoice No.</div><div>${esc(p.clientInvoiceNumber||"-")}</div></div>
+          <div class="invoice-line"><div class="k">Currency</div><div>${esc(cur)}</div></div>
         </div>
 
-        <div class="invoice-rule"></div>
-        <div class="invoice-title">PURCHASE INVOICE</div>
-
-        <div class="invoice-meta">
-          <div>
-            <div style="font-weight:900;color:#174a91;margin-bottom:8px">Supplier / Client</div>
-            <div class="invoice-line"><div class="k">Name</div><div>${esc(p.clientName||"-")}</div></div>
-            <div class="invoice-line"><div class="k">Client Invoice No.</div><div>${esc(p.clientInvoiceNumber||"-")}</div></div>
-            <div class="invoice-line"><div class="k">Currency</div><div>${esc(cur)}</div></div>
-          </div>
-
-          <div class="invoice-box">
-            <div class="invoice-line"><div class="k">Purchase ID</div><div>${esc(p.purchaseId||"-")}</div></div>
-            <div class="invoice-line"><div class="k">Purchase Date</div><div>${esc(formatDateOnly(p.purchaseDate))}</div></div>
-            <div class="invoice-line"><div class="k">Payment Term</div><div>${esc(p.paymentTerm||"-")}</div></div>
-            <div class="invoice-line"><div class="k">Purchaser</div><div>${esc(p.purchaserName||"-")}</div></div>
-          </div>
+        <div class="invoice-box">
+          <div class="invoice-line"><div class="k">Purchase ID</div><div>${esc(p.purchaseId||"-")}</div></div>
+          <div class="invoice-line"><div class="k">Purchase Date</div><div>${esc(formatDateOnly(p.purchaseDate))}</div></div>
+          <div class="invoice-line"><div class="k">Payment Term</div><div>${esc(p.paymentTerm||"-")}</div></div>
+          <div class="invoice-line"><div class="k">Purchaser</div><div>${esc(p.purchaserName||"-")}</div></div>
         </div>
+      </div>
 
-        <table class="invoice-table">
-          <thead>
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th style="width:60px">N.O.</th>
+            <th>Description</th>
+            <th style="width:130px">Qty / Unit</th>
+            <th style="width:150px">Unit Price (${esc(cur)})</th>
+            <th style="width:150px">Amount (${esc(cur)})</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.length?items.map((x,i)=>`
             <tr>
-              <th style="width:60px">N.O.</th>
-              <th>Description</th>
-              <th style="width:130px">Qty / Unit</th>
-              <th style="width:150px">Unit Price (${esc(cur)})</th>
-              <th style="width:150px">Amount (${esc(cur)})</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items.length?items.map((x,i)=>`
-              <tr>
-                <td style="text-align:center">${i+1}</td>
-                <td><strong>${esc(x.productName)}</strong><div style="font-size:10px;color:#6b7280">${esc(getProductBarcode(x.productCode)||"")}</div></td>
-                <td style="text-align:center">${num(x.qty)} ${esc(x.unit||"")}</td>
-                <td style="text-align:right">${money(x.unitPrice,cur)}</td>
-                <td style="text-align:right"><strong>${money(x.amount,cur)}</strong></td>
-              </tr>`).join(""):'<tr><td colspan="5">No Purchase Items found.</td></tr>'}
-          </tbody>
-        </table>
+              <td style="text-align:center">${i+1}</td>
+              <td>
+                <strong>${esc(x.productName)}</strong>
+                <div style="font-size:10px;color:#6b7280">${esc(getProductBarcode(x.productCode)||"")}</div>
+              </td>
+              <td style="text-align:center">${num(x.qty)} ${esc(x.unit||"")}</td>
+              <td style="text-align:right">${money(x.unitPrice,cur)}</td>
+              <td style="text-align:right"><strong>${money(x.amount,cur)}</strong></td>
+            </tr>`).join(""):'<tr><td colspan="5">No Purchase Items found.</td></tr>'}
+        </tbody>
+      </table>
 
-        <div class="invoice-summary">
-          <div class="row"><span>Subtotal</span><strong>${money(p.subtotal,cur)}</strong></div>
-          <div class="row"><span>Discount</span><strong>${money(p.discount,cur)}</strong></div>
-          <div class="row total"><span>Grand Total (${esc(cur)})</span><span>${money(p.grandTotal,cur)}</span></div>
-        </div>
+      <div class="invoice-summary">
+        <div class="row"><span>Subtotal</span><strong>${money(p.subtotal,cur)}</strong></div>
+        <div class="row"><span>Discount</span><strong>${money(p.discount,cur)}</strong></div>
+        <div class="row total"><span>Grand Total (${esc(cur)})</span><span>${money(p.grandTotal,cur)}</span></div>
+      </div>
 
+      <div class="invoice-note">
+        <div style="font-size:11px;font-weight:900;color:#475569;margin-bottom:6px">Amount In Words</div>
+        <div>${esc(amountInWords(p.grandTotal,cur))}</div>
+      </div>
+
+      ${p.note?`
         <div class="invoice-note">
-          <div style="font-size:11px;font-weight:900;color:#475569;margin-bottom:6px">Amount In Words</div>
-          <div>${esc(amountInWords(p.grandTotal,cur))}</div>
+          <div style="font-size:11px;font-weight:900;color:#475569;margin-bottom:6px">Note</div>
+          <div>${esc(p.note)}</div>
+        </div>`:""}
+
+      <div class="invoice-sign">
+        <div class="sig">
+          <div>Prepared By</div>
+          <div class="line"></div>
+          <strong>${esc(p.purchaserName||"")}</strong>
         </div>
-
-        ${p.note?`
-          <div class="invoice-note">
-            <div style="font-size:11px;font-weight:900;color:#475569;margin-bottom:6px">Note</div>
-            <div>${esc(p.note)}</div>
-          </div>`:""}
-
-        <div class="invoice-sign">
-          <div class="sig">
-            <div>Prepared By</div>
-            <div class="line"></div>
-            <strong>${esc(p.purchaserName||"")}</strong>
-          </div>
-          <div class="sig">
-            <div>Authorized By</div>
-            <div class="line"></div>
-            <strong>&nbsp;</strong>
-          </div>
+        <div class="sig">
+          <div>Authorized By</div>
+          <div class="line"></div>
+          <strong>&nbsp;</strong>
         </div>
       </div>
-    `;
-  }catch(e){
-    document.getElementById("detailContent").innerHTML='<div class="status">Could not load detail: '+esc(e.message||"Error")+'</div>';
-  }
+    </div>
+  `;
 }
 
 function closeModal(){document.getElementById("modal").classList.remove("show");}
