@@ -1,42 +1,2963 @@
 <!doctype html>
 <html lang="en">
+
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BIG BROTHER — Purchase History Supabase DEV</title>
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+
+<title>
+  BIG BROTHER — Purchase History
+</title>
+
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#1f2937;font-family:Inter,Arial,sans-serif}:root{--blue:#174a91;--line:#dce4ee;--muted:#6b7280;--green:#157a51;--red:#b42318}.page{max-width:1550px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}h1{margin:0;color:var(--blue);font-size:28px}.sub{font-size:13px;color:var(--muted);margin-top:5px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 14px #173a6610;padding:17px;margin-bottom:15px}.filters{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr auto;gap:10px;align-items:end}label{display:block;font-size:12px;font-weight:800;color:#475569;margin-bottom:6px}input,select{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:10px 11px;font:inherit;background:#fff}button{cursor:pointer;font-weight:800;border-radius:8px;padding:10px 14px}.primary{border:0;background:var(--blue);color:#fff}.secondary{border:1px solid var(--line);background:#fff;color:#334155}.status{background:#eef4fb;border:1px solid #d9e5f3;color:#405d7d;padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:12px}.status.success{background:#eef9f3;border-color:#c9ead9;color:#176c4a}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse;min-width:1250px}th,td{padding:10px;border-bottom:1px solid var(--line);font-size:12px;text-align:left;white-space:nowrap}th{background:#f8fafc;color:#475569;position:sticky;top:0}.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800}.paid{background:#e9f8f0;color:#176c4a}.partial{background:#fff7e6;color:#8a5a00}.unpaid{background:#fff0f0;color:#a62f2f}.done{background:#eef4fb;color:#174a91}.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:15px}.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}.stat .k{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.stat .v{font-size:20px;font-weight:900;color:#22354d;margin-top:4px}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal.show{display:flex}.modalbox{background:#fff;border-radius:14px;max-width:1180px;width:100%;max-height:90vh;overflow:auto;padding:18px}.modalhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}.close{border:1px solid var(--line);background:#fff}.detailgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.detail{border:1px solid var(--line);border-radius:9px;padding:10px}.detail .k{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase}.detail .v{margin-top:4px;font-weight:800}.invoice-sheet{background:#fff;border:1px solid #d9e2ec;border-radius:8px;padding:28px;color:#18212f}.invoice-brand{text-align:center;margin-bottom:12px}.invoice-brand .name{font-size:30px;font-weight:900;color:#174a91;letter-spacing:.4px}.invoice-brand .tag{font-size:12px;color:#5f6f82;margin-top:2px}.invoice-rule{height:3px;background:#174a91;margin:16px 0 18px}.invoice-title{text-align:center;font-size:24px;font-weight:900;color:#174a91;margin:0 0 22px}.invoice-meta{display:grid;grid-template-columns:1.3fr .9fr;gap:20px;margin-bottom:18px}.invoice-box{border:1px solid #e1e8f0;border-radius:8px;padding:13px}.invoice-line{display:grid;grid-template-columns:130px 1fr;gap:8px;padding:3px 0;font-size:12px}.invoice-line .k{font-weight:800;color:#475569}.invoice-table{width:100%;border-collapse:collapse;min-width:0}.invoice-table th{background:#174a91;color:#fff;position:static}.invoice-table th,.invoice-table td{border:1px solid #d8e1eb;padding:8px;font-size:12px;white-space:normal}.invoice-summary{width:min(430px,100%);margin-left:auto;border-left:1px solid #d8e1eb;border-right:1px solid #d8e1eb}.invoice-summary .row{display:flex;justify-content:space-between;border-bottom:1px solid #d8e1eb;padding:9px 12px;font-size:12px}.invoice-summary .row.total{font-size:16px;font-weight:900;background:#eaf2fb;color:#174a91}.invoice-note{margin-top:18px;border:1px solid #e1e8f0;border-radius:8px;padding:12px}.invoice-sign{display:grid;grid-template-columns:1fr 1fr;gap:70px;margin-top:48px}.invoice-sign .sig{text-align:center;font-size:12px}.invoice-sign .line{border-top:1px solid #5b6878;margin:44px auto 8px;max-width:180px}.print-btn{border:0;background:#174a91;color:#fff}.pill{display:inline-block;padding:7px 10px;border-radius:999px;background:#e8f7ef;color:#168652;font-weight:900;font-size:11px}@media print{body *{visibility:hidden!important}#modal,#modal *{visibility:visible!important}#modal{position:absolute!important;inset:0!important;background:#fff!important;padding:0!important;display:block!important}.modalbox{max-width:none!important;width:100%!important;max-height:none!important;overflow:visible!important;box-shadow:none!important;border-radius:0!important}.modalhead{display:none!important}.invoice-sheet{border:0!important;border-radius:0!important}}@media(max-width:1000px){.filters,.summary,.detailgrid{grid-template-columns:1fr 1fr}}@media(max-width:600px){.filters,.summary,.detailgrid,.invoice-meta{grid-template-columns:1fr}.page{padding:12px}}
+
+*{
+  box-sizing:border-box;
+}
+
+:root{
+  --blue:#174a91;
+  --line:#dce4ee;
+  --muted:#6b7280;
+  --green:#157a51;
+  --red:#b42318;
+  --orange:#a85b12;
+}
+
+html,
+body{
+  margin:0;
+  min-height:100%;
+}
+
+body{
+  background:#f4f7fb;
+  color:#1f2937;
+  font-family:Inter,Arial,sans-serif;
+}
+
+.page{
+  max-width:1650px;
+  margin:auto;
+  padding:22px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:16px;
+}
+
+h1{
+  margin:0;
+  color:var(--blue);
+  font-size:28px;
+}
+
+.sub{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:5px;
+}
+
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:0 3px 14px #173a6610;
+  padding:17px;
+  margin-bottom:15px;
+}
+
+.filters{
+  display:grid;
+  grid-template-columns:1.4fr 1fr 1fr 1fr auto;
+  gap:10px;
+  align-items:end;
+}
+
+label{
+  display:block;
+  font-size:12px;
+  font-weight:800;
+  color:#475569;
+  margin-bottom:6px;
+}
+
+input,
+select{
+  width:100%;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  padding:10px 11px;
+  font:inherit;
+  background:#fff;
+}
+
+button{
+  cursor:pointer;
+  font-weight:800;
+  border-radius:8px;
+  padding:10px 14px;
+}
+
+.primary{
+  border:0;
+  background:var(--blue);
+  color:#fff;
+}
+
+.secondary{
+  border:1px solid var(--line);
+  background:#fff;
+  color:#334155;
+}
+
+.status{
+  background:#eef4fb;
+  border:1px solid #d9e5f3;
+  color:#405d7d;
+  padding:10px 12px;
+  border-radius:8px;
+  font-size:12px;
+  margin-bottom:12px;
+}
+
+.status.success{
+  background:#eef9f3;
+  border-color:#c9ead9;
+  color:#176c4a;
+}
+
+.tablewrap{
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:10px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1650px;
+}
+
+th,
+td{
+  padding:10px;
+  border-bottom:1px solid var(--line);
+  font-size:12px;
+  text-align:left;
+  white-space:nowrap;
+}
+
+th{
+  background:#f8fafc;
+  color:#475569;
+  position:sticky;
+  top:0;
+  z-index:1;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+}
+
+.paid{
+  background:#e9f8f0;
+  color:#176c4a;
+}
+
+.partial{
+  background:#fff7e6;
+  color:#8a5a00;
+}
+
+.unpaid{
+  background:#fff0f0;
+  color:#a62f2f;
+}
+
+.done{
+  background:#eef4fb;
+  color:#174a91;
+}
+
+.promo{
+  background:#e9f8f0;
+  color:#176c4a;
+}
+
+.summary{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.stat{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:14px;
+}
+
+.stat .k{
+  font-size:11px;
+  color:var(--muted);
+  font-weight:800;
+  text-transform:uppercase;
+}
+
+.stat .v{
+  font-size:20px;
+  font-weight:900;
+  color:#22354d;
+  margin-top:4px;
+}
+
+.pill{
+  display:inline-block;
+  padding:7px 10px;
+  border-radius:999px;
+  background:#e8f7ef;
+  color:#168652;
+  font-weight:900;
+  font-size:11px;
+}
+
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#0008;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:50;
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modalbox{
+  background:#fff;
+  border-radius:14px;
+  max-width:1350px;
+  width:100%;
+  max-height:90vh;
+  overflow:auto;
+  padding:18px;
+}
+
+.modalhead{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.close{
+  border:1px solid var(--line);
+  background:#fff;
+}
+
+.print-btn{
+  border:0;
+  background:#174a91;
+  color:#fff;
+}
+
+
+/* ============================================================
+   PURCHASE DOCUMENT
+   ============================================================ */
+
+.invoice-sheet{
+  background:#fff;
+  border:1px solid #d9e2ec;
+  border-radius:8px;
+  padding:28px;
+  color:#18212f;
+}
+
+.invoice-brand{
+  text-align:center;
+  margin-bottom:12px;
+}
+
+.invoice-brand .name{
+  font-size:30px;
+  font-weight:900;
+  color:#174a91;
+  letter-spacing:.4px;
+}
+
+.invoice-brand .tag{
+  font-size:12px;
+  color:#5f6f82;
+  margin-top:2px;
+}
+
+.invoice-rule{
+  height:3px;
+  background:#174a91;
+  margin:16px 0 18px;
+}
+
+.invoice-title{
+  text-align:center;
+  font-size:24px;
+  font-weight:900;
+  color:#174a91;
+  margin:0 0 22px;
+}
+
+.invoice-meta{
+  display:grid;
+  grid-template-columns:1.3fr .9fr;
+  gap:20px;
+  margin-bottom:18px;
+}
+
+.invoice-box{
+  border:1px solid #e1e8f0;
+  border-radius:8px;
+  padding:13px;
+}
+
+.invoice-line{
+  display:grid;
+  grid-template-columns:130px 1fr;
+  gap:8px;
+  padding:3px 0;
+  font-size:12px;
+}
+
+.invoice-line .k{
+  font-weight:800;
+  color:#475569;
+}
+
+
+/* ============================================================
+   QTY SUMMARY
+   ============================================================ */
+
+.qty-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:0 0 18px;
+}
+
+.qty-box{
+  border:1px solid #dce4ee;
+  background:#f8fafc;
+  border-radius:9px;
+  padding:11px 12px;
+}
+
+.qty-box small{
+  display:block;
+  color:#6b7280;
+  font-size:9px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
+.qty-box strong{
+  display:block;
+  margin-top:4px;
+  color:#174a91;
+  font-size:17px;
+}
+
+.qty-box.promotion strong{
+  color:#157a51;
+}
+
+
+/* ============================================================
+   PURCHASE DETAIL TABLE
+   ============================================================ */
+
+.invoice-table-wrap{
+  overflow:auto;
+}
+
+.invoice-table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1080px;
+}
+
+.invoice-table th{
+  background:#174a91;
+  color:#fff;
+  position:static;
+}
+
+.invoice-table th,
+.invoice-table td{
+  border:1px solid #d8e1eb;
+  padding:8px;
+  font-size:11px;
+  white-space:nowrap;
+}
+
+.invoice-table .effective-cost{
+  font-weight:900;
+  color:#157a51;
+}
+
+.invoice-table .promotion-qty{
+  font-weight:900;
+  color:#157a51;
+}
+
+.invoice-table .total-receive{
+  font-weight:900;
+  color:#174a91;
+}
+
+
+/* ============================================================
+   PURCHASE TOTALS
+   ============================================================ */
+
+.invoice-summary{
+  width:min(430px,100%);
+  margin-left:auto;
+  border-left:1px solid #d8e1eb;
+  border-right:1px solid #d8e1eb;
+}
+
+.invoice-summary .row{
+  display:flex;
+  justify-content:space-between;
+  border-bottom:1px solid #d8e1eb;
+  padding:9px 12px;
+  font-size:12px;
+}
+
+.invoice-summary .row.total{
+  font-size:16px;
+  font-weight:900;
+  background:#eaf2fb;
+  color:#174a91;
+}
+
+.invoice-note{
+  margin-top:18px;
+  border:1px solid #e1e8f0;
+  border-radius:8px;
+  padding:12px;
+}
+
+.invoice-sign{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:70px;
+  margin-top:48px;
+}
+
+.invoice-sign .sig{
+  text-align:center;
+  font-size:12px;
+}
+
+.invoice-sign .line{
+  border-top:1px solid #5b6878;
+  margin:44px auto 8px;
+  max-width:180px;
+}
+
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print{
+
+  body *{
+    visibility:hidden!important;
+  }
+
+  #modal,
+  #modal *{
+    visibility:visible!important;
+  }
+
+  #modal{
+    position:absolute!important;
+    inset:0!important;
+    background:#fff!important;
+    padding:0!important;
+    display:block!important;
+  }
+
+  .modalbox{
+    max-width:none!important;
+    width:100%!important;
+    max-height:none!important;
+    overflow:visible!important;
+    box-shadow:none!important;
+    border-radius:0!important;
+    padding:0!important;
+  }
+
+  .modalhead{
+    display:none!important;
+  }
+
+  .invoice-sheet{
+    border:0!important;
+    border-radius:0!important;
+  }
+
+  .invoice-table-wrap{
+    overflow:visible!important;
+  }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media(max-width:1000px){
+
+  .filters,
+  .summary{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .invoice-meta{
+    grid-template-columns:1fr;
+  }
+
+}
+
+@media(max-width:700px){
+
+  .qty-summary{
+    grid-template-columns:1fr;
+  }
+
+}
+
+@media(max-width:600px){
+
+  .filters,
+  .summary{
+    grid-template-columns:1fr;
+  }
+
+  .page{
+    padding:12px;
+  }
+
+  .top{
+    display:block;
+  }
+
+  .top>div:last-child{
+    margin-top:10px;
+  }
+
+}
+
 </style>
+
 </head>
+
+
 <body>
+
+
 <div class="page">
-  <div class="top"><div><h1>Purchase History</h1><div class="sub">BIG BROTHER — Supabase DEV Purchase Records</div></div><div style="display:flex;gap:8px;align-items:center"><span class="pill">Secure Supabase DEV</span><button class="secondary" id="refreshBtn">Refresh</button></div></div>
-  <div class="summary"><div class="stat"><div class="k">Purchase Count</div><div class="v" id="countStat">0</div></div><div class="stat"><div class="k">Total Purchase USD</div><div class="v" id="usdStat">$0.00</div></div><div class="stat"><div class="k">Total Payable USD</div><div class="v" id="payableStat">$0.00</div></div><div class="stat"><div class="k">Clients</div><div class="v" id="clientStat">0</div></div></div>
-  <div class="card"><div id="status" class="status">Connecting to Supabase...</div><div class="filters"><div><label>Search</label><input id="search" placeholder="Purchase ID / Client / Purchaser / Invoice Number"></div><div><label>From Date</label><input id="fromDate" type="date"></div><div><label>To Date</label><input id="toDate" type="date"></div><div><label>Payment Status</label><select id="paymentStatus"><option value="">All</option><option>Paid</option><option>Partially Paid</option><option>Unpaid</option></select></div><button class="secondary" id="clearBtn">Clear</button></div></div>
-  <div class="card"><div class="tablewrap"><table><thead><tr><th>Purchase ID</th><th>Purchase Date</th><th>Client Invoice Number</th><th>Client</th><th>Purchaser</th><th>Currency</th><th>Grand Total</th><th>Amount Paid</th><th>Payable</th><th>Payment Status</th><th>Status</th><th>Preview</th></tr></thead><tbody id="tbody"><tr><td colspan="12">Loading...</td></tr></tbody></table></div></div>
+
+
+  <div class="top">
+
+    <div>
+
+      <h1>
+        Purchase History
+      </h1>
+
+      <div class="sub">
+        BIG BROTHER — Supabase DEV Purchase Records · Promotion Qty V1
+      </div>
+
+    </div>
+
+
+    <div
+      style="
+        display:flex;
+        gap:8px;
+        align-items:center
+      "
+    >
+
+      <span class="pill">
+        Secure Supabase DEV
+      </span>
+
+      <button
+        class="secondary"
+        id="refreshBtn"
+      >
+        Refresh
+      </button>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="summary">
+
+
+    <div class="stat">
+
+      <div class="k">
+        Purchase Count
+      </div>
+
+      <div
+        class="v"
+        id="countStat"
+      >
+        0
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="k">
+        Total Purchase USD
+      </div>
+
+      <div
+        class="v"
+        id="usdStat"
+      >
+        $0.00
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="k">
+        Total Payable USD
+      </div>
+
+      <div
+        class="v"
+        id="payableStat"
+      >
+        $0.00
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="k">
+        Clients
+      </div>
+
+      <div
+        class="v"
+        id="clientStat"
+      >
+        0
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div
+      id="status"
+      class="status"
+    >
+      Connecting to Supabase...
+    </div>
+
+
+    <div class="filters">
+
+
+      <div>
+
+        <label>
+          Search
+        </label>
+
+        <input
+          id="search"
+          placeholder="Purchase ID / Client / Purchaser / Invoice Number"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          From Date
+        </label>
+
+        <input
+          id="fromDate"
+          type="date"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          To Date
+        </label>
+
+        <input
+          id="toDate"
+          type="date"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          Payment Status
+        </label>
+
+        <select id="paymentStatus">
+
+          <option value="">
+            All
+          </option>
+
+          <option>
+            Paid
+          </option>
+
+          <option>
+            Partially Paid
+          </option>
+
+          <option>
+            Unpaid
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <button
+        class="secondary"
+        id="clearBtn"
+      >
+        Clear
+      </button>
+
+
+    </div>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div class="tablewrap">
+
+
+      <table>
+
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Purchase ID
+            </th>
+
+            <th>
+              Purchase Date
+            </th>
+
+            <th>
+              Client Invoice Number
+            </th>
+
+            <th>
+              Client
+            </th>
+
+            <th>
+              Purchaser
+            </th>
+
+            <th>
+              Currency
+            </th>
+
+            <th>
+              Purchase Qty
+            </th>
+
+            <th>
+              Promotion Qty
+            </th>
+
+            <th>
+              Total Receive
+            </th>
+
+            <th>
+              Grand Total
+            </th>
+
+            <th>
+              Amount Paid
+            </th>
+
+            <th>
+              Payable
+            </th>
+
+            <th>
+              Payment Status
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Preview
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody id="tbody">
+
+          <tr>
+
+            <td colspan="15">
+              Loading...
+            </td>
+
+          </tr>
+
+        </tbody>
+
+
+      </table>
+
+
+    </div>
+
+
+  </div>
+
+
 </div>
-<div class="modal" id="modal"><div class="modalbox"><div class="modalhead"><div><h2 style="margin:0;color:#174a91">Purchase Detail</h2><div class="sub" id="modalSub"></div></div><div style="display:flex;gap:8px"><button class="print-btn" id="printBtn">Print</button><button class="close" id="closeBtn">Close</button></div></div><div id="detailContent"></div></div></div>
+
+
+
+<!-- ============================================================
+     PURCHASE DETAIL MODAL
+     ============================================================ -->
+
+<div
+  class="modal"
+  id="modal"
+>
+
+  <div class="modalbox">
+
+
+    <div class="modalhead">
+
+
+      <div>
+
+        <h2
+          style="
+            margin:0;
+            color:#174a91
+          "
+        >
+          Purchase Detail
+        </h2>
+
+        <div
+          class="sub"
+          id="modalSub"
+        ></div>
+
+      </div>
+
+
+      <div
+        style="
+          display:flex;
+          gap:8px
+        "
+      >
+
+        <button
+          class="print-btn"
+          id="printBtn"
+        >
+          Print
+        </button>
+
+        <button
+          class="close"
+          id="closeBtn"
+        >
+          Close
+        </button>
+
+      </div>
+
+
+    </div>
+
+
+    <div id="detailContent"></div>
+
+
+  </div>
+
+</div>
+
+
+
 <script>
+
 'use strict';
-const URL='https://sjfhlaclgmkwwofzstok.supabase.co';
-const KEY='sb_publishable_w762jR65CWwlO30fKQsYOw_6L9grx8S';
-const SESSION_KEY='BB_SUPABASE_DEV_SESSION_V1';
-let session=null,purchases=[],allPurchaseItems=[],lastRevision='';
-const $=id=>document.getElementById(id),num=v=>Number.isFinite(Number(v))?Number(v):0,esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-function money(v,c='USD'){const n=num(v);return String(c).toUpperCase()==='KHR'?n.toLocaleString('en-US',{maximumFractionDigits:0})+' ៛':'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function fmtDate(v){if(!v)return'';const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);if(!m)return String(v);const mon=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return m[3]+'-'+mon[Number(m[2])-1]+'-'+m[1]}
-function setStatus(t,ok=false){$('status').textContent=t;$('status').className='status'+(ok?' success':'')}
-function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null}}
-function saveSession(s){session=s;if(!s)localStorage.removeItem(SESSION_KEY);else{if(!s.expires_at&&s.expires_in)s.expires_at=Math.floor(Date.now()/1000)+Number(s.expires_in);localStorage.setItem(SESSION_KEY,JSON.stringify(s))}}
-async function parse(r){const t=await r.text();let d={};try{d=t?JSON.parse(t):{}}catch(e){d={message:t}}if(!r.ok)throw new Error(d.message||d.error_description||d.error||'Request failed');return d}
-async function refreshSession(){session=readSession();if(!session?.refresh_token)throw new Error('Please sign in from Clients Editor first.');const r=await fetch(URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})});saveSession(await parse(r))}
-async function ensure(){session=readSession();if(!session?.access_token)throw new Error('Please sign in from Clients Editor first.');if(session.expires_at&&session.expires_at<Math.floor(Date.now()/1000)+30)await refreshSession()}
-async function rpc(fn,args={}){await ensure();const r=await fetch(URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify(args),cache:'no-store'});return parse(r)}
-async function loadPurchases(){setStatus('Loading Purchase History from Supabase...');try{const d=await rpc('bb_purchase_history_bundle');lastRevision=d.revision||'';purchases=d.purchases||[];allPurchaseItems=d.items||[];render();setStatus(purchases.length+' Purchase record(s) loaded.',true)}catch(e){setStatus(e.message)}}
-function filtered(){const q=$('search').value.trim().toLowerCase(),f=$('fromDate').value,t=$('toDate').value,s=$('paymentStatus').value;return purchases.filter(p=>{const hay=[p.purchaseId,p.clientInvoiceNumber,p.clientName,p.clientCode,p.purchaserName].join(' ').toLowerCase();return(!q||hay.includes(q))&&(!f||p.purchaseDate>=f)&&(!t||p.purchaseDate<=t)&&(!s||p.paymentStatus===s)})}
-function render(){const rows=filtered();$('tbody').innerHTML=rows.length?rows.map(p=>`<tr><td><strong>${esc(p.purchaseId)}</strong></td><td>${esc(fmtDate(p.purchaseDate))}</td><td>${esc(p.clientInvoiceNumber||'—')}</td><td>${esc(p.clientName||'—')}</td><td>${esc(p.purchaserName||'—')}</td><td>${esc(p.currency||'USD')}</td><td>${money(p.grandTotal,p.currency)}</td><td>${money(p.amountPaid,p.currency)}</td><td>${money(p.payable,p.currency)}</td><td><span class="badge ${p.paymentStatus==='Paid'?'paid':p.paymentStatus==='Partially Paid'?'partial':'unpaid'}">${esc(p.paymentStatus||'')}</span></td><td><span class="badge done">${esc(p.status||'')}</span></td><td><button class="secondary preview" data-id="${esc(p.purchaseId)}">Preview</button></td></tr>`).join(''):'<tr><td colspan="12">No Purchase records found.</td></tr>';const usd=rows.filter(p=>String(p.currency).toUpperCase()==='USD').reduce((s,p)=>s+num(p.grandTotal),0),pay=rows.filter(p=>String(p.currency).toUpperCase()==='USD').reduce((s,p)=>s+num(p.payable),0);$('countStat').textContent=rows.length;$('usdStat').textContent=money(usd,'USD');$('payableStat').textContent=money(pay,'USD');$('clientStat').textContent=new Set(rows.map(p=>p.clientId)).size}
-function clearFilters(){$('search').value='';$('fromDate').value='';$('toDate').value='';$('paymentStatus').value='';render()}
-async function preview(id){try{const d=await rpc('bb_purchase_detail',{p_purchase_id:id}),p=d.purchase,items=d.items||[];$('modalSub').textContent=p.clientName+' • '+(p.clientInvoiceNumber||p.purchaseId);$('detailContent').innerHTML=`<div class="invoice-sheet"><div class="invoice-brand"><div class="name">BIG BROTHER</div><div class="tag">Purchase Record</div></div><div class="invoice-rule"></div><div class="invoice-title">PURCHASE</div><div class="invoice-meta"><div class="invoice-box"><div class="invoice-line"><div class="k">Client</div><div>${esc(p.clientName||'')}</div></div><div class="invoice-line"><div class="k">Client Code</div><div>${esc(p.clientCode||'')}</div></div><div class="invoice-line"><div class="k">Client Invoice</div><div>${esc(p.clientInvoiceNumber||'')}</div></div><div class="invoice-line"><div class="k">Purchaser</div><div>${esc(p.purchaserName||'')}</div></div></div><div class="invoice-box"><div class="invoice-line"><div class="k">Purchase ID</div><div>${esc(p.purchaseId)}</div></div><div class="invoice-line"><div class="k">Purchase Date</div><div>${esc(fmtDate(p.purchaseDate))}</div></div><div class="invoice-line"><div class="k">Currency</div><div>${esc(p.currency)}</div></div><div class="invoice-line"><div class="k">Payment Term</div><div>${esc(p.paymentTerm||'')}</div></div></div></div><table class="invoice-table"><thead><tr><th>No.</th><th>Product</th><th>Code</th><th>Qty</th><th>Unit</th><th>Unit Price</th><th>Amount</th></tr></thead><tbody>${items.map(x=>`<tr><td>${esc(x.lineNo)}</td><td>${esc(x.productName)}</td><td>${esc(x.productCode)}</td><td>${num(x.qty)}</td><td>${esc(x.unit||'')}</td><td>${money(x.unitPrice,p.currency)}</td><td>${money(x.amount,p.currency)}</td></tr>`).join('')}</tbody></table><div class="invoice-summary"><div class="row"><span>Subtotal</span><strong>${money(p.subtotal,p.currency)}</strong></div><div class="row"><span>Discount</span><strong>${money(p.discount,p.currency)}</strong></div><div class="row total"><span>Grand Total</span><strong>${money(p.grandTotal,p.currency)}</strong></div><div class="row"><span>Amount Paid</span><strong>${money(p.amountPaid,p.currency)}</strong></div><div class="row"><span>Payable</span><strong>${money(p.payable,p.currency)}</strong></div><div class="row"><span>Payment Status</span><strong>${esc(p.paymentStatus||'')}</strong></div></div>${p.note?`<div class="invoice-note"><strong>Note:</strong> ${esc(p.note)}</div>`:''}<div class="invoice-sign"><div class="sig"><div class="line"></div>Prepared By</div><div class="sig"><div class="line"></div>Approved By</div></div>`;$('modal').classList.add('show')}catch(e){alert(e.message)}}
-$('refreshBtn').addEventListener('click',loadPurchases);$('clearBtn').addEventListener('click',clearFilters);['search'].forEach(id=>$(id).addEventListener('input',render));['fromDate','toDate','paymentStatus'].forEach(id=>$(id).addEventListener('change',render));$('tbody').addEventListener('click',e=>{const b=e.target.closest('.preview');if(b)preview(b.dataset.id)});$('closeBtn').addEventListener('click',()=>$('modal').classList.remove('show'));$('printBtn').addEventListener('click',()=>window.print());$('modal').addEventListener('click',e=>{if(e.target===$('modal'))$('modal').classList.remove('show')});loadPurchases();setInterval(async()=>{try{const d=await rpc('bb_purchase_history_bundle');if(lastRevision&&d.revision!==lastRevision){purchases=d.purchases||[];allPurchaseItems=d.items||[];lastRevision=d.revision||'';render();setStatus('Updated automatically',true)}}catch(e){}},20000);
+
+
+
+/* ============================================================
+   CONFIG
+   ============================================================ */
+
+const URL=
+  'https://sjfhlaclgmkwwofzstok.supabase.co';
+
+
+const KEY=
+  'sb_publishable_w762jR65CWwlO30fKQsYOw_6L9grx8S';
+
+
+const SESSION_KEY=
+  'BB_SUPABASE_DEV_SESSION_V1';
+
+
+
+let session=null;
+
+let purchases=[];
+
+let allPurchaseItems=[];
+
+let lastRevision='';
+
+
+
+const $=
+  id=>
+    document.getElementById(
+      id
+    );
+
+
+
+const num=
+  value=>
+    Number.isFinite(
+      Number(
+        value
+      )
+    )
+      ?
+      Number(
+        value
+      )
+      :
+      0;
+
+
+
+const esc=
+  value=>
+    String(
+      value ?? ''
+    )
+    .replace(
+      /[&<>"']/g,
+      character=>(
+        {
+          '&':'&amp;',
+          '<':'&lt;',
+          '>':'&gt;',
+          '"':'&quot;',
+          "'":'&#039;'
+        }[
+          character
+        ]
+      )
+    );
+
+
+
+/* ============================================================
+   FORMAT
+   ============================================================ */
+
+function money(
+  value,
+  currency='USD'
+){
+
+  const amount=
+    num(
+      value
+    );
+
+
+  if(
+    String(
+      currency
+    )
+    .toUpperCase()
+    ===
+    'KHR'
+  ){
+
+    return(
+      amount.toLocaleString(
+        'en-US',
+        {
+          maximumFractionDigits:0
+        }
+      )
+      +
+      ' ៛'
+    );
+
+  }
+
+
+  return(
+    '$'
+    +
+    amount.toLocaleString(
+      'en-US',
+      {
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+      }
+    )
+  );
+
+}
+
+
+
+function unitCost(
+  value,
+  currency='USD'
+){
+
+  const amount=
+    num(
+      value
+    );
+
+
+  if(
+    String(
+      currency
+    )
+    .toUpperCase()
+    ===
+    'KHR'
+  ){
+
+    return(
+      amount.toLocaleString(
+        'en-US',
+        {
+          minimumFractionDigits:0,
+          maximumFractionDigits:4
+        }
+      )
+      +
+      ' ៛'
+    );
+
+  }
+
+
+  return(
+    '$'
+    +
+    amount.toLocaleString(
+      'en-US',
+      {
+        minimumFractionDigits:2,
+        maximumFractionDigits:6
+      }
+    )
+  );
+
+}
+
+
+
+function qty(
+  value
+){
+
+  return num(
+    value
+  )
+  .toLocaleString(
+    'en-US',
+    {
+      minimumFractionDigits:0,
+      maximumFractionDigits:2
+    }
+  );
+
+}
+
+
+
+function fmtDate(
+  value
+){
+
+  if(
+    !value
+  ){
+
+    return '';
+
+  }
+
+
+  const match=
+    String(
+      value
+    )
+    .match(
+      /^(\d{4})-(\d{2})-(\d{2})/
+    );
+
+
+  if(
+    !match
+  ){
+
+    return String(
+      value
+    );
+
+  }
+
+
+  const months=[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ];
+
+
+  return(
+    match[3]
+    +
+    '-'
+    +
+    months[
+      Number(
+        match[2]
+      )
+      -
+      1
+    ]
+    +
+    '-'
+    +
+    match[1]
+  );
+
+}
+
+
+
+function setStatus(
+  text,
+  ok=false
+){
+
+  $('status').textContent=
+    text;
+
+
+  $('status').className=
+    'status'
+    +
+    (
+      ok
+        ?
+        ' success'
+        :
+        ''
+    );
+
+}
+
+
+
+/* ============================================================
+   SESSION
+   ============================================================ */
+
+function readSession(){
+
+  try{
+
+    return JSON.parse(
+      localStorage.getItem(
+        SESSION_KEY
+      )
+      ||
+      'null'
+    );
+
+  }catch(error){
+
+    return null;
+
+  }
+
+}
+
+
+
+function saveSession(
+  newSession
+){
+
+  session=
+    newSession;
+
+
+  if(
+    !newSession
+  ){
+
+    localStorage.removeItem(
+      SESSION_KEY
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !newSession.expires_at
+    &&
+    newSession.expires_in
+  ){
+
+    newSession.expires_at=
+      Math.floor(
+        Date.now()/1000
+      )
+      +
+      Number(
+        newSession.expires_in
+      );
+
+  }
+
+
+  localStorage.setItem(
+    SESSION_KEY,
+    JSON.stringify(
+      newSession
+    )
+  );
+
+}
+
+
+
+async function parse(
+  response
+){
+
+  const text=
+    await response.text();
+
+
+  let data={};
+
+
+  try{
+
+    data=
+      text
+        ?
+        JSON.parse(
+          text
+        )
+        :
+        {};
+
+  }catch(error){
+
+    data={
+      message:text
+    };
+
+  }
+
+
+  if(
+    !response.ok
+  ){
+
+    throw new Error(
+      data.message
+      ||
+      data.error_description
+      ||
+      data.error
+      ||
+      'Request failed'
+    );
+
+  }
+
+
+  return data;
+
+}
+
+
+
+async function refreshSession(){
+
+  session=
+    readSession();
+
+
+  if(
+    !session?.refresh_token
+  ){
+
+    throw new Error(
+      'Please sign in from Clients Editor first.'
+    );
+
+  }
+
+
+  const response=
+    await fetch(
+
+      URL
+      +
+      '/auth/v1/token?grant_type=refresh_token',
+
+      {
+        method:'POST',
+
+        headers:{
+          apikey:KEY,
+          'Content-Type':'application/json'
+        },
+
+        body:
+          JSON.stringify(
+            {
+              refresh_token:
+                session.refresh_token
+            }
+          )
+      }
+
+    );
+
+
+  saveSession(
+    await parse(
+      response
+    )
+  );
+
+}
+
+
+
+async function ensure(){
+
+  session=
+    readSession();
+
+
+  if(
+    !session?.access_token
+  ){
+
+    throw new Error(
+      'Please sign in from Clients Editor first.'
+    );
+
+  }
+
+
+  if(
+    session.expires_at
+    &&
+    session.expires_at
+      <
+      Math.floor(
+        Date.now()/1000
+      )
+      +
+      30
+  ){
+
+    await refreshSession();
+
+  }
+
+}
+
+
+
+async function rpc(
+  functionName,
+  args={}
+){
+
+  await ensure();
+
+
+  const response=
+    await fetch(
+
+      URL
+      +
+      '/rest/v1/rpc/'
+      +
+      functionName,
+
+      {
+        method:'POST',
+
+        headers:{
+          apikey:KEY,
+          Authorization:
+            'Bearer '
+            +
+            session.access_token,
+          'Content-Type':
+            'application/json'
+        },
+
+        body:
+          JSON.stringify(
+            args
+          ),
+
+        cache:'no-store'
+      }
+
+    );
+
+
+  return parse(
+    response
+  );
+
+}
+
+
+
+/* ============================================================
+   ITEM HELPERS
+   ============================================================ */
+
+function itemsForPurchase(
+  purchaseId
+){
+
+  return allPurchaseItems.filter(
+    item=>
+      item.purchaseId
+      ===
+      purchaseId
+  );
+
+}
+
+
+
+function purchaseQtyOf(
+  item
+){
+
+  return num(
+    item.purchaseQty
+    ??
+    item.qty
+  );
+
+}
+
+
+
+function promotionQtyOf(
+  item
+){
+
+  return num(
+    item.promotionQty
+  );
+
+}
+
+
+
+function totalReceiveQtyOf(
+  item
+){
+
+  if(
+    item.totalReceiveQty
+    !==
+    undefined
+    &&
+    item.totalReceiveQty
+    !==
+    null
+  ){
+
+    return num(
+      item.totalReceiveQty
+    );
+
+  }
+
+
+  return(
+    purchaseQtyOf(
+      item
+    )
+    +
+    promotionQtyOf(
+      item
+    )
+  );
+
+}
+
+
+
+function effectiveUnitCostOf(
+  item
+){
+
+  if(
+    item.effectiveUnitCost
+    !==
+    undefined
+    &&
+    item.effectiveUnitCost
+    !==
+    null
+  ){
+
+    return num(
+      item.effectiveUnitCost
+    );
+
+  }
+
+
+  const totalQty=
+    totalReceiveQtyOf(
+      item
+    );
+
+
+  const inventoryCost=
+    num(
+      item.inventoryCostAmount
+      ??
+      item.amount
+  );
+
+
+  if(
+    totalQty
+    >
+    0
+  ){
+
+    return(
+      inventoryCost
+      /
+      totalQty
+    );
+
+  }
+
+
+  return num(
+    item.unitPrice
+  );
+
+}
+
+
+
+function purchaseQtyTotals(
+  purchaseId
+){
+
+  const lines=
+    itemsForPurchase(
+      purchaseId
+    );
+
+
+  return lines.reduce(
+    (
+      totals,
+      item
+    )=>{
+
+      totals.purchase+=
+        purchaseQtyOf(
+          item
+        );
+
+
+      totals.promotion+=
+        promotionQtyOf(
+          item
+        );
+
+
+      totals.receive+=
+        totalReceiveQtyOf(
+          item
+        );
+
+
+      return totals;
+
+    },
+    {
+      purchase:0,
+      promotion:0,
+      receive:0
+    }
+  );
+
+}
+
+
+
+/* ============================================================
+   LOAD
+   ============================================================ */
+
+async function loadPurchases(){
+
+  setStatus(
+    'Loading Purchase History from Supabase...'
+  );
+
+
+  try{
+
+
+    const data=
+      await rpc(
+        'bb_purchase_history_bundle'
+      );
+
+
+    lastRevision=
+      data.revision
+      ||
+      '';
+
+
+    purchases=
+      data.purchases
+      ||
+      [];
+
+
+    allPurchaseItems=
+      data.items
+      ||
+      [];
+
+
+    render();
+
+
+    setStatus(
+      purchases.length
+      +
+      ' Purchase record(s) loaded.',
+      true
+    );
+
+
+  }catch(error){
+
+
+    setStatus(
+      error.message
+    );
+
+
+  }
+
+}
+
+
+
+/* ============================================================
+   FILTER
+   ============================================================ */
+
+function filtered(){
+
+  const search=
+    $('search')
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const fromDate=
+    $('fromDate').value;
+
+
+  const toDate=
+    $('toDate').value;
+
+
+  const paymentStatus=
+    $('paymentStatus').value;
+
+
+  return purchases.filter(
+    purchase=>{
+
+
+      const searchText=[
+
+        purchase.purchaseId,
+
+        purchase.clientInvoiceNumber,
+
+        purchase.clientName,
+
+        purchase.clientCode,
+
+        purchase.purchaserName
+
+      ]
+      .join(
+        ' '
+      )
+      .toLowerCase();
+
+
+      return(
+
+        (
+          !search
+          ||
+          searchText.includes(
+            search
+          )
+        )
+
+        &&
+
+        (
+          !fromDate
+          ||
+          purchase.purchaseDate
+          >=
+          fromDate
+        )
+
+        &&
+
+        (
+          !toDate
+          ||
+          purchase.purchaseDate
+          <=
+          toDate
+        )
+
+        &&
+
+        (
+          !paymentStatus
+          ||
+          purchase.paymentStatus
+          ===
+          paymentStatus
+        )
+
+      );
+
+    }
+  );
+
+}
+
+
+
+/* ============================================================
+   MAIN TABLE
+   ============================================================ */
+
+function render(){
+
+  const rows=
+    filtered();
+
+
+  $('tbody').innerHTML=
+
+    rows.length
+
+      ?
+
+      rows
+        .map(
+          purchase=>{
+
+
+            const totals=
+              purchaseQtyTotals(
+                purchase.purchaseId
+              );
+
+
+            return`
+
+<tr>
+
+  <td>
+    <strong>
+      ${esc(purchase.purchaseId)}
+    </strong>
+  </td>
+
+  <td>
+    ${esc(fmtDate(purchase.purchaseDate))}
+  </td>
+
+  <td>
+    ${esc(purchase.clientInvoiceNumber||'—')}
+  </td>
+
+  <td>
+    ${esc(purchase.clientName||'—')}
+  </td>
+
+  <td>
+    ${esc(purchase.purchaserName||'—')}
+  </td>
+
+  <td>
+    ${esc(purchase.currency||'USD')}
+  </td>
+
+  <td>
+    <strong>
+      ${qty(totals.purchase)}
+    </strong>
+  </td>
+
+  <td>
+    ${
+      totals.promotion
+      >
+      0
+
+        ?
+
+        `<span class="badge promo">${qty(totals.promotion)}</span>`
+
+        :
+
+        qty(0)
+    }
+  </td>
+
+  <td>
+    <strong style="color:#174a91">
+      ${qty(totals.receive)}
+    </strong>
+  </td>
+
+  <td>
+    ${money(
+      purchase.grandTotal,
+      purchase.currency
+    )}
+  </td>
+
+  <td>
+    ${money(
+      purchase.amountPaid,
+      purchase.currency
+    )}
+  </td>
+
+  <td>
+    ${money(
+      purchase.payable,
+      purchase.currency
+    )}
+  </td>
+
+  <td>
+
+    <span
+      class="badge ${
+        purchase.paymentStatus
+        ===
+        'Paid'
+
+          ?
+
+          'paid'
+
+          :
+
+          purchase.paymentStatus
+          ===
+          'Partially Paid'
+
+            ?
+
+            'partial'
+
+            :
+
+            'unpaid'
+      }"
+    >
+      ${esc(purchase.paymentStatus||'')}
+    </span>
+
+  </td>
+
+  <td>
+
+    <span class="badge done">
+      ${esc(purchase.status||'')}
+    </span>
+
+  </td>
+
+  <td>
+
+    <button
+      class="secondary preview"
+      data-id="${esc(purchase.purchaseId)}"
+    >
+      Preview
+    </button>
+
+  </td>
+
+</tr>
+`;
+
+          }
+        )
+        .join(
+          ''
+        )
+
+      :
+
+      `
+<tr>
+  <td colspan="15">
+    No Purchase records found.
+  </td>
+</tr>
+`;
+
+
+  const usdTotal=
+    rows
+      .filter(
+        purchase=>
+          String(
+            purchase.currency
+          )
+          .toUpperCase()
+          ===
+          'USD'
+      )
+      .reduce(
+        (
+          total,
+          purchase
+        )=>
+          total
+          +
+          num(
+            purchase.grandTotal
+          ),
+        0
+      );
+
+
+  const payableTotal=
+    rows
+      .filter(
+        purchase=>
+          String(
+            purchase.currency
+          )
+          .toUpperCase()
+          ===
+          'USD'
+      )
+      .reduce(
+        (
+          total,
+          purchase
+        )=>
+          total
+          +
+          num(
+            purchase.payable
+          ),
+        0
+      );
+
+
+  $('countStat').textContent=
+    rows.length;
+
+
+  $('usdStat').textContent=
+    money(
+      usdTotal,
+      'USD'
+    );
+
+
+  $('payableStat').textContent=
+    money(
+      payableTotal,
+      'USD'
+    );
+
+
+  $('clientStat').textContent=
+    new Set(
+      rows.map(
+        purchase=>
+          purchase.clientId
+      )
+    )
+    .size;
+
+}
+
+
+
+/* ============================================================
+   CLEAR FILTERS
+   ============================================================ */
+
+function clearFilters(){
+
+  $('search').value=
+    '';
+
+
+  $('fromDate').value=
+    '';
+
+
+  $('toDate').value=
+    '';
+
+
+  $('paymentStatus').value=
+    '';
+
+
+  render();
+
+}
+
+
+
+/* ============================================================
+   DETAIL PREVIEW
+   ============================================================ */
+
+async function preview(
+  purchaseId
+){
+
+  try{
+
+
+    const data=
+      await rpc(
+
+        'bb_purchase_detail',
+
+        {
+          p_purchase_id:
+            purchaseId
+        }
+
+      );
+
+
+    const purchase=
+      data.purchase;
+
+
+    const items=
+      data.items
+      ||
+      [];
+
+
+    const purchaseQty=
+      items.reduce(
+        (
+          total,
+          item
+        )=>
+          total
+          +
+          purchaseQtyOf(
+            item
+          ),
+        0
+      );
+
+
+    const promotionQty=
+      items.reduce(
+        (
+          total,
+          item
+        )=>
+          total
+          +
+          promotionQtyOf(
+            item
+          ),
+        0
+      );
+
+
+    const totalReceiveQty=
+      items.reduce(
+        (
+          total,
+          item
+        )=>
+          total
+          +
+          totalReceiveQtyOf(
+            item
+          ),
+        0
+      );
+
+
+    $('modalSub').textContent=
+
+      (
+        purchase.clientName
+        ||
+        ''
+      )
+
+      +
+
+      ' • '
+
+      +
+
+      (
+        purchase.clientInvoiceNumber
+        ||
+        purchase.purchaseId
+      );
+
+
+    $('detailContent').innerHTML=
+`
+<div class="invoice-sheet">
+
+
+  <div class="invoice-brand">
+
+    <div class="name">
+      BIG BROTHER
+    </div>
+
+    <div class="tag">
+      Purchase Record
+    </div>
+
+  </div>
+
+
+  <div class="invoice-rule"></div>
+
+
+  <div class="invoice-title">
+    PURCHASE
+  </div>
+
+
+  <div class="invoice-meta">
+
+
+    <div class="invoice-box">
+
+
+      <div class="invoice-line">
+
+        <div class="k">
+          Client
+        </div>
+
+        <div>
+          ${esc(purchase.clientName||'')}
+        </div>
+
+      </div>
+
+
+      <div class="invoice-line">
+
+        <div class="k">
+          Client Code
+        </div>
+
+        <div>
+          ${esc(purchase.clientCode||'')}
+        </div>
+
+      </div>
+
+
+      <div class="invoice-line">
+
+        <div class="k">
+          Client Invoice
+        </div>
+
+        <div>
+          ${esc(purchase.clientInvoiceNumber||'')}
+        </div>
+
+      </div>
+
+
+      <div class="invoice-line">
+
+        <div class="k">
+          Purchaser
+        </div>
+
+        <div>
+          ${esc(purchase.purchaserName||'')}
+        </div>
+
+      </div>
+
+
+    </div>
+
+
+    <div class="invoice-box">
+
+
+      <div class="invoice-line">
+
+        <div class="k">
+          Purchase ID
+        </div>
+
+        <div>
+          ${esc(purchase.purchaseId)}
+        </div>
+
+      </div>
+
+
+      <div class="invoice-line">
+
+        <div class="k">
+          Purchase Date
+        </div>
+
+        <div>
+          ${esc(fmtDate(purchase.purchaseDate))}
+        </div>
+
+      </div>
+
+
+      <div class="invoice-line">
+
+        <div class="k">
+          Currency
+        </div>
+
+        <div>
+          ${esc(purchase.currency||'USD')}
+        </div>
+
+      </div>
+
+
+      <div class="invoice-line">
+
+        <div class="k">
+          Payment Term
+        </div>
+
+        <div>
+          ${esc(purchase.paymentTerm||'')}
+        </div>
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+  <div class="qty-summary">
+
+
+    <div class="qty-box">
+
+      <small>
+        Purchase Qty
+      </small>
+
+      <strong>
+        ${qty(purchaseQty)}
+      </strong>
+
+    </div>
+
+
+    <div class="qty-box promotion">
+
+      <small>
+        Promotion Qty
+      </small>
+
+      <strong>
+        ${qty(promotionQty)}
+      </strong>
+
+    </div>
+
+
+    <div class="qty-box">
+
+      <small>
+        Total Receive Qty
+      </small>
+
+      <strong>
+        ${qty(totalReceiveQty)}
+      </strong>
+
+    </div>
+
+
+  </div>
+
+
+  <div class="invoice-table-wrap">
+
+
+    <table class="invoice-table">
+
+
+      <thead>
+
+        <tr>
+
+          <th>
+            No.
+          </th>
+
+          <th>
+            Product
+          </th>
+
+          <th>
+            Code
+          </th>
+
+          <th>
+            Purchase Qty
+          </th>
+
+          <th>
+            Promotion Qty
+          </th>
+
+          <th>
+            Total Receive
+          </th>
+
+          <th>
+            Unit
+          </th>
+
+          <th>
+            Supplier Unit Price
+          </th>
+
+          <th>
+            Effective Unit Cost
+          </th>
+
+          <th>
+            Amount
+          </th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        ${
+          items
+            .map(
+              item=>
+`
+<tr>
+
+  <td>
+    ${esc(item.lineNo)}
+  </td>
+
+  <td>
+    <strong>
+      ${esc(item.productName)}
+    </strong>
+  </td>
+
+  <td>
+    ${esc(item.productCode)}
+  </td>
+
+  <td>
+    ${qty(purchaseQtyOf(item))}
+  </td>
+
+  <td class="promotion-qty">
+    ${qty(promotionQtyOf(item))}
+  </td>
+
+  <td class="total-receive">
+    ${qty(totalReceiveQtyOf(item))}
+  </td>
+
+  <td>
+    ${esc(item.unit||'')}
+  </td>
+
+  <td>
+    ${unitCost(
+      item.unitPrice,
+      purchase.currency
+    )}
+  </td>
+
+  <td class="effective-cost">
+    ${unitCost(
+      effectiveUnitCostOf(item),
+      purchase.currency
+    )}
+  </td>
+
+  <td>
+    ${money(
+      item.amount,
+      purchase.currency
+    )}
+  </td>
+
+</tr>
+`
+            )
+            .join(
+              ''
+            )
+        }
+
+      </tbody>
+
+
+    </table>
+
+
+  </div>
+
+
+  <div class="invoice-summary">
+
+
+    <div class="row">
+
+      <span>
+        Subtotal
+      </span>
+
+      <strong>
+        ${money(
+          purchase.subtotal,
+          purchase.currency
+        )}
+      </strong>
+
+    </div>
+
+
+    <div class="row">
+
+      <span>
+        Discount
+      </span>
+
+      <strong>
+        ${money(
+          purchase.discount,
+          purchase.currency
+        )}
+      </strong>
+
+    </div>
+
+
+    <div class="row total">
+
+      <span>
+        Grand Total
+      </span>
+
+      <strong>
+        ${money(
+          purchase.grandTotal,
+          purchase.currency
+        )}
+      </strong>
+
+    </div>
+
+
+    <div class="row">
+
+      <span>
+        Amount Paid
+      </span>
+
+      <strong>
+        ${money(
+          purchase.amountPaid,
+          purchase.currency
+        )}
+      </strong>
+
+    </div>
+
+
+    <div class="row">
+
+      <span>
+        Payable
+      </span>
+
+      <strong>
+        ${money(
+          purchase.payable,
+          purchase.currency
+        )}
+      </strong>
+
+    </div>
+
+
+    <div class="row">
+
+      <span>
+        Payment Status
+      </span>
+
+      <strong>
+        ${esc(purchase.paymentStatus||'')}
+      </strong>
+
+    </div>
+
+
+  </div>
+
+
+  ${
+    purchase.note
+
+      ?
+
+      `
+<div class="invoice-note">
+  <strong>Note:</strong>
+  ${esc(purchase.note)}
+</div>
+`
+
+      :
+
+      ''
+  }
+
+
+  <div class="invoice-sign">
+
+
+    <div class="sig">
+
+      <div class="line"></div>
+
+      Prepared By
+
+    </div>
+
+
+    <div class="sig">
+
+      <div class="line"></div>
+
+      Approved By
+
+    </div>
+
+
+  </div>
+
+
+</div>
+`;
+
+
+    $('modal')
+      .classList
+      .add(
+        'show'
+      );
+
+
+  }catch(error){
+
+
+    alert(
+      error.message
+    );
+
+
+  }
+
+}
+
+
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+
+$('refreshBtn')
+  .addEventListener(
+    'click',
+    loadPurchases
+  );
+
+
+$('clearBtn')
+  .addEventListener(
+    'click',
+    clearFilters
+  );
+
+
+$('search')
+  .addEventListener(
+    'input',
+    render
+  );
+
+
+[
+  'fromDate',
+  'toDate',
+  'paymentStatus'
+]
+.forEach(
+  id=>
+    $(id)
+      .addEventListener(
+        'change',
+        render
+      )
+);
+
+
+$('tbody')
+  .addEventListener(
+    'click',
+    event=>{
+
+      const button=
+        event.target.closest(
+          '.preview'
+        );
+
+
+      if(
+        button
+      ){
+
+        preview(
+          button.dataset.id
+        );
+
+      }
+
+    }
+  );
+
+
+$('closeBtn')
+  .addEventListener(
+    'click',
+    ()=>{
+
+      $('modal')
+        .classList
+        .remove(
+          'show'
+        );
+
+    }
+  );
+
+
+$('printBtn')
+  .addEventListener(
+    'click',
+    ()=>window.print()
+  );
+
+
+$('modal')
+  .addEventListener(
+    'click',
+    event=>{
+
+      if(
+        event.target
+        ===
+        $('modal')
+      ){
+
+        $('modal')
+          .classList
+          .remove(
+            'show'
+          );
+
+      }
+
+    }
+  );
+
+
+
+/* ============================================================
+   AUTO REFRESH
+   ============================================================ */
+
+setInterval(
+
+  async()=>{
+
+    try{
+
+
+      const data=
+        await rpc(
+          'bb_purchase_history_bundle'
+        );
+
+
+      if(
+        lastRevision
+        &&
+        data.revision
+        !==
+        lastRevision
+      ){
+
+        purchases=
+          data.purchases
+          ||
+          [];
+
+
+        allPurchaseItems=
+          data.items
+          ||
+          [];
+
+
+        lastRevision=
+          data.revision
+          ||
+          '';
+
+
+        render();
+
+
+        setStatus(
+          'Updated automatically',
+          true
+        );
+
+      }
+
+
+    }catch(error){}
+
+
+  },
+
+  20000
+
+);
+
+
+
+/* ============================================================
+   START
+   ============================================================ */
+
+loadPurchases();
+
 </script>
-</body></html>
+
+
+</body>
+</html>
