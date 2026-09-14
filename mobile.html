@@ -30,9 +30,11 @@ try{
   const response=await fetch('index.html?v=20260915-2',{cache:'no-store'});
   if(!response.ok)throw new Error('Could not load Purchase History source.');
   let html=await response.text();
+  html=html.replace(/bb_purchase_history_bundle/g,'bb_purchase_history_mobile_bundle');
+  html=html.replace(/bb_purchase_detail/g,'bb_purchase_history_mobile_detail');
   const headClose=html.toLowerCase().indexOf('</head>');
   if(headClose<0)throw new Error('Purchase History source is missing </head>.');
-  html=html.slice(0,headClose)+'<link rel="stylesheet" href="mobile-purchase-history.css?v=20260915-1">\n'+html.slice(headClose);
+  html=html.slice(0,headClose)+'<link rel="stylesheet" href="mobile-purchase-history.css?v=20260915-2">\n'+html.slice(headClose);
   const bodyClose=html.toLowerCase().lastIndexOf('</body>');
   if(bodyClose<0)throw new Error('Purchase History source is missing </body>.');
   html=html.slice(0,bodyClose)+'<script src="mobile-purchase-history.js?v=20260915-1"><\/script>\n'+html.slice(bodyClose);
