@@ -27,7 +27,7 @@ function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 async function assertPermission(){const p=await rpc('bb_current_access_profile');if(p?.user?.isAdmin===true)return p;const mods=Array.isArray(p?.modules)?p.modules:[];const grant=mods.find(x=>key(x.moduleKey)==='*')||mods.find(x=>key(x.moduleKey)==='route.purchase-history')||mods.find(x=>key(x.moduleKey)==='purchase_history');if(!grant||grant.canView!==true)throw new Error('You do not have permission to view Purchase History.');return p}
 try{
   await assertPermission();
-  const response=await fetch('index.html?v=20260915-2',{cache:'no-store'});
+  const response=await fetch('index.html?v=20260926-edit1',{cache:'no-store'});
   if(!response.ok)throw new Error('Could not load Purchase History source.');
   let html=await response.text();
   html=html.replace(/bb_purchase_history_bundle/g,'bb_purchase_history_mobile_bundle');
