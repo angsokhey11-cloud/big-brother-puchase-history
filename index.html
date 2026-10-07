@@ -143,6 +143,33 @@ button{
   border-radius:10px;
 }
 
+/* Desktop helper: keep horizontal table movement available while the
+   long Purchase History table extends below the visible workspace. */
+.bb-floating-xscroll{
+  position:fixed;
+  bottom:0;
+  height:18px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  background:#fff;
+  border:1px solid var(--line);
+  border-bottom:0;
+  border-radius:9px 9px 0 0;
+  box-shadow:0 -3px 12px #173a6620;
+  z-index:40;
+  display:none;
+}
+
+.bb-floating-xscroll-inner{
+  height:1px;
+}
+
+@media(max-width:700px){
+  .bb-floating-xscroll{
+    display:none!important;
+  }
+}
+
 table{
   width:100%;
   border-collapse:collapse;
@@ -2951,8 +2978,339 @@ setInterval(
 
 
 /* ============================================================
+   FLOATING DESKTOP HORIZONTAL TABLE SCROLL
+   ============================================================ */
+
+function installFloatingTableScroll(){
+
+  const wrap=
+    document.querySelector(
+      '.tablewrap'
+    );
+
+
+  if(
+    !wrap
+  ){
+
+    return;
+
+  }
+
+
+  const bar=
+    document.createElement(
+      'div'
+    );
+
+
+  bar.className=
+    'bb-floating-xscroll';
+
+
+  const inner=
+    document.createElement(
+      'div'
+    );
+
+
+  inner.className=
+    'bb-floating-xscroll-inner';
+
+
+  bar.appendChild(
+    inner
+  );
+
+
+  document.body.appendChild(
+    bar
+  );
+
+
+  let syncing=
+    false;
+
+
+  const syncSizeAndPosition=
+    ()=>{
+
+      const rect=
+        wrap.getBoundingClientRect();
+
+
+      const viewportWidth=
+        window.innerWidth;
+
+
+      const viewportHeight=
+        window.innerHeight;
+
+
+      const needsHorizontalScroll=
+        wrap.scrollWidth
+        >
+        wrap.clientWidth
+        +
+        1;
+
+
+      const tableIsVisible=
+        rect.bottom
+        >
+        0
+        &&
+        rect.top
+        <
+        viewportHeight;
+
+
+      const nativeBottomIsStillBelowScreen=
+        rect.bottom
+        >
+        viewportHeight;
+
+
+      const desktop=
+        viewportWidth
+        >
+        700;
+
+
+      if(
+        !desktop
+        ||
+        !needsHorizontalScroll
+        ||
+        !tableIsVisible
+        ||
+        !nativeBottomIsStillBelowScreen
+      ){
+
+        bar.style.display=
+          'none';
+
+        return;
+
+      }
+
+
+      const left=
+        Math.max(
+          0,
+          rect.left
+        );
+
+
+      const right=
+        Math.min(
+          viewportWidth,
+          rect.right
+        );
+
+
+      const width=
+        Math.max(
+          0,
+          right
+          -
+          left
+        );
+
+
+      if(
+        width
+        <
+        80
+      ){
+
+        bar.style.display=
+          'none';
+
+        return;
+
+      }
+
+
+      inner.style.width=
+        wrap.scrollWidth
+        +
+        'px';
+
+
+      bar.style.left=
+        left
+        +
+        'px';
+
+
+      bar.style.width=
+        width
+        +
+        'px';
+
+
+      bar.style.display=
+        'block';
+
+
+      if(
+        !syncing
+      ){
+
+        syncing=
+          true;
+
+
+        bar.scrollLeft=
+          wrap.scrollLeft;
+
+
+        syncing=
+          false;
+
+      }
+
+    };
+
+
+  wrap.addEventListener(
+    'scroll',
+    ()=>{
+
+      if(
+        syncing
+      ){
+
+        return;
+
+      }
+
+
+      syncing=
+        true;
+
+
+      bar.scrollLeft=
+        wrap.scrollLeft;
+
+
+      syncing=
+        false;
+
+    },
+    {
+      passive:true
+    }
+  );
+
+
+  bar.addEventListener(
+    'scroll',
+    ()=>{
+
+      if(
+        syncing
+      ){
+
+        return;
+
+      }
+
+
+      syncing=
+        true;
+
+
+      wrap.scrollLeft=
+        bar.scrollLeft;
+
+
+      syncing=
+        false;
+
+    },
+    {
+      passive:true
+    }
+  );
+
+
+  window.addEventListener(
+    'scroll',
+    syncSizeAndPosition,
+    {
+      passive:true
+    }
+  );
+
+
+  window.addEventListener(
+    'resize',
+    syncSizeAndPosition,
+    {
+      passive:true
+    }
+  );
+
+
+  if(
+    'ResizeObserver'
+    in
+    window
+  ){
+
+    new ResizeObserver(
+      syncSizeAndPosition
+    )
+    .observe(
+      wrap
+    );
+
+  }
+
+
+  const body=
+    wrap.querySelector(
+      'tbody'
+    );
+
+
+  if(
+    body
+    &&
+    'MutationObserver'
+    in
+    window
+  ){
+
+    new MutationObserver(
+      syncSizeAndPosition
+    )
+    .observe(
+      body,
+      {
+        childList:true,
+        subtree:true
+      }
+    );
+
+  }
+
+
+  requestAnimationFrame(
+    syncSizeAndPosition
+  );
+
+}
+
+
+
+/* ============================================================
    START
    ============================================================ */
+
+installFloatingTableScroll();
 
 loadPurchases();
 
