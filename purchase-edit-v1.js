@@ -1,6 +1,6 @@
 /* BIG BROTHER — Purchase Invoice Edit V1
    Admin-only edit from Purchase History.
-   Item/QTY/price edits are locked after any Purchase stock has been received. */
+   After receiving, quantities and products remain locked while price/discount corrections revalue purchase receipts. */
 (function(){
 'use strict';
 
@@ -155,13 +155,13 @@ function renderItems(){
       </td>
       <td><input class="bb-pe-qty" data-i="${i}" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(item.qty)}" ${locked?'disabled':''}></td>
       <td><input class="bb-pe-promo" data-i="${i}" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(item.promotionQty||0)}" ${locked?'disabled':''}></td>
-      <td><input class="bb-pe-price" data-i="${i}" type="number" min="0" step="0.0001" inputmode="decimal" value="${fmt4(item.unitPrice)}" ${locked?'disabled':''}></td>
+      <td><input class="bb-pe-price" data-i="${i}" type="number" min="0" step="0.0001" inputmode="decimal" value="${fmt4(item.unitPrice)}"></td>
       <td style="text-align:right;font-weight:900">${fmt2(num(item.qty)*num(item.unitPrice))}</td>
       <td>${locked?'':'<button class="bb-pe-remove" data-remove="'+i+'" type="button">✕</button>'}</td>
     </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:18px;color:#6b7280">No items</td></tr>';
 
   document.getElementById('bbPeAdd').hidden=locked;
-  document.getElementById('bbPeDiscount').disabled=locked;
+  document.getElementById('bbPeDiscount').disabled=false;
   updateTotals();
 }
 
@@ -266,7 +266,7 @@ async function openEditor(id){
       rule.textContent='No Purchase stock has been received yet. Product, QTY, Promotion QTY, Supplier Price and Discount can be edited.';
     }else{
       rule.className='bb-pe-lock';
-      rule.textContent='🔒 '+(d.lineEditReason||'Stock has already been received. Item values are locked to protect Stock and COGS.')+' Header information can still be edited.';
+      rule.textContent='🔒 Stock received: Product and quantities remain locked. Supplier Price and Invoice Discount can be corrected. Monthly COGS will use revised receipt values.';
     }
 
     renderItems();
@@ -292,7 +292,7 @@ async function saveEditor(){
     const totals=updateTotals();
     if(!clean(document.getElementById('bbPeInvoiceNo').value))throw new Error('Client Invoice No. is required.');
 
-    if(editState.canEditLines){
+    if(true){
       if(!editState.items.length)throw new Error('At least one Purchase item is required.');
       for(const item of editState.items){
         if(!clean(item.productCode))throw new Error('Select Product for every line.');
@@ -312,9 +312,10 @@ async function saveEditor(){
       note:clean(document.getElementById('bbPeNote').value),
       editLines:editState.canEditLines
     };
-    if(editState.canEditLines){
+    if(true){
       payload.discount=num(document.getElementById('bbPeDiscount').value);
       payload.items=editState.items.map(x=>({
+        purchaseItemId:x.purchaseItemId,
         productCode:x.productCode,
         qty:num(x.qty),
         promotionQty:num(x.promotionQty),
@@ -322,10 +323,9 @@ async function saveEditor(){
       }));
     }
 
-    const result=await rpcCall('bb_purchase_edit_save',{
-      p_purchase_id:editState.purchase.purchaseId,
-      p_payload:payload
-    });
+    const result=editState.canEditLines
+      ? await rpcCall('bb_purchase_edit_save',{p_purchase_id:editState.purchase.purchaseId,p_payload:payload})
+      : await rpcCall('bb_purchase_edit_costs',{p_purchase_id:editState.purchase.purchaseId,p_payload:payload});
 
     setStatus(result.message||'Purchase updated successfully.');
     const id=editState.purchase.purchaseId;
@@ -376,5 +376,5 @@ function boot(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
 else boot();
 
-window.BB_PURCHASE_EDIT_BUILD='20260926-v1';
+window.BB_PURCHASE_EDIT_BUILD='20261020-cost-v2';
 })();
